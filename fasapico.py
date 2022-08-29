@@ -92,10 +92,9 @@ def emojiCharacter(c):
         return chr(28)
     if c == "surprised":
         return chr(29)
-
-
-
-# map (scale) a value from one range [fromStartValue, fromEndValue] to a new range [destinationStartValue, destinationEndValue]
-def mapValue(value, fromStartValue, fromEndValue, destinationStartValue, destinationEndValue):
-    return destinationStartValue + ((float(value - fromStartValue) / float(fromEndValue - fromStartValue)) * (destinationEndValue - destinationStartValue))
-
+    
+    
+# map (scale) a value x from one range [in_min, in_max] to a new range [out_min, out_max]
+def map(x, in_min, in_max, out_min, out_max):
+    """ Maps two ranges together """
+    return int((x-in_min) * (out_max-out_min) / (in_max - in_min) + out_min)

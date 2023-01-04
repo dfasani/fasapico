@@ -22,8 +22,3 @@ def get_distance(pin_number):
 while True:
     print("The distance from object is", get_distance(pin_number=7), "cm")
     utime.sleep(0.2)
-
-
-
-
-

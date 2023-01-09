@@ -54,11 +54,3 @@ def rgbLed(r,g,b):
     
     ar[0] = int(s)
     sm.put(ar,8)
-
-
-
- 
-# map (scale) a value x from one range [in_min, in_max] to a new range [out_min, out_max] using
-def map_int(x, in_min, in_max, out_min, out_max):
-    """ Maps two ranges together """
-    return (x-in_min) * (out_max-out_min) / (in_max - in_min) + out_min

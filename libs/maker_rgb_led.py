@@ -25,6 +25,11 @@ sm.active(1)
 # change the value of the onboard RGB Led
 def rgbLed(r,g,b):
     
+    #type conversion
+    r = int(r)
+    g = int(g)
+    b = int(b)
+    
     #correct wrong values
     if r<0 : r=0
     if g<0 : g=0
@@ -32,11 +37,6 @@ def rgbLed(r,g,b):
     if r>255 : r=255
     if g>255 : g=255
     if b>255 : b=255
-    
-    #type conversion
-    r = int(r)
-    g = int(g)
-    b = int(b)
     
     r = hex(r)[2:]
     g = hex(g)[2:]

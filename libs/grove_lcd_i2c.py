@@ -1,11 +1,3 @@
-# 
-# Grove 16x2 I2C LCD (White on Blue)
-# - https://my.cytron.io/p-grove-16-x-2-lcd-white-on-blue?tracking=idris
-#
-# Update:
-# 10 Jan 2021: Tested with MicroPython ESP32 V1.13
-#
-
 from machine import Pin, I2C
 import utime
 
@@ -48,10 +40,8 @@ class Grove_LCD_I2C(object):
     LCD_5x10DOTS = 0x04
     LCD_5x8DOTS = 0x00
 
-    #def __init__(self, i2c_num=0, sda_pin=4, scl_pin=5 address=62, oneline=False, charsize=LCD_5x8DOTS):
     def __init__(self, i2c_num=0, sda_pin=4, scl_pin=5 ,address=62, oneline=False, charsize=LCD_5x8DOTS):
         i2c = I2C(i2c_num, sda=Pin(sda_pin), scl=Pin(scl_pin))
-    
 
         self.i2c = i2c
         self.address = address

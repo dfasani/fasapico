@@ -47,7 +47,7 @@ def rgbLed(r,g,b):
     if len(g)==1 : g = "0"+g
     if len(b)==1 : b = "0"+b
     
-    s = int("0x" + r + g + b) 
+    s = int("0x" + g + r + b) 
 
     # Display a pattern on the LEDs via an array of LED RGB values.
     ar = array.array("I", [0])

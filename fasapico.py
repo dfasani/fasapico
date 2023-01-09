@@ -57,44 +57,8 @@ def rgbLed(r,g,b):
 
 
 
-
-    
-# used to ensure that a value is a number
-def isNumber(n):
-    if not (type(n) is int or type(n) is float):
-        try:
-            n = float(n)
-        except:
-            return 0
-    return n
-
-
-
-# translates emojis to their corresponding control characters
-def emojiCharacter(c):
-    if c == "in-love":
-        return chr(20)
-    if c == "sad":
-        return chr(21)
-    if c == "happy":
-        return chr(22)
-    if c == "thinking":
-        return chr(23)
-    if c == "quiet":
-        return chr(24)
-    if c == "confused":
-        return chr(25)
-    if c == "suspicious":
-        return chr(26)
-    if c == "unhappy":
-        return chr(27)
-    if c == "bored":
-        return chr(28)
-    if c == "surprised":
-        return chr(29)
-    
-    
-# map (scale) a value x from one range [in_min, in_max] to a new range [out_min, out_max]
-def map(x, in_min, in_max, out_min, out_max):
+ 
+# map (scale) a value x from one range [in_min, in_max] to a new range [out_min, out_max] using
+def map_int(x, in_min, in_max, out_min, out_max):
     """ Maps two ranges together """
-    return int((x-in_min) * (out_max-out_min) / (in_max - in_min) + out_min)
+    return (x-in_min) * (out_max-out_min) / (in_max - in_min) + out_min

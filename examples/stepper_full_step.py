@@ -16,7 +16,7 @@ full_step_sequence = [
     ]
 
 while True :
-    for step in full_step_sequence:     # pour chacune des etapes
-        for i in range(4):              # i de 0 à 3
-            pins[i].value(step[i])	# maj PIN n° i
-        sleep(0.005)			# il faut attendre un peu pour laisser le temps au moteur de deplacer
+    for step in full_step_sequence:             # pour chacune des etapes
+        for i in range(len(full_step_sequence)):# i de 0 à 3
+            pins[i].value(step[i])	        # maj PIN n° i
+        sleep(0.005)			        # il faut attendre un peu pour laisser le temps au moteur de deplacer

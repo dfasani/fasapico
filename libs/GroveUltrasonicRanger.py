@@ -9,6 +9,9 @@ def get_distance(pin_number):
     utime.sleep_us(5)
     Pin(pin_number, Pin.OUT).low()
     
+    signaloff = 0
+    signalon = 0
+    
     while Pin(pin_number, Pin.IN).value() == 0:
         signaloff = utime.ticks_us()
     while Pin(pin_number, Pin.IN).value() == 1:

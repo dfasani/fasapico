@@ -11,7 +11,7 @@ while True:
     for x in str(gpsModule.readline()):
         my_gps.update(x)
     
-    print( "latitude", my_gps.longitude)
+    print( "latitude", my_gps.latitude)
     print( "longitude", my_gps.longitude)
     print()
 

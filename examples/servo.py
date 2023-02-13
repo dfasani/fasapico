@@ -6,7 +6,7 @@ servo.freq(50)      # 50 Hz is a good frequency
 
 BABORD = 3000
 BARRE_AU_CENTRE = 5000
-TRIBORD = 9000
+TRIBORD = 7000
 
 servo.duty_u16(BARRE_AU_CENTRE)
 sleep(1)

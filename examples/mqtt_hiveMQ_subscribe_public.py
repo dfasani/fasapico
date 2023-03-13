@@ -15,4 +15,4 @@ clientMQTT.set_callback(on_message_callback) #a chaque evenement, on appelle la 
 clientMQTT.subscribe("bretagne/a3") #on s'abonne a bretagne/a3
 
 while True :
-    c.wait_msg() #on regarde la boite aux lettres si un msg est arrivé
+    clientMQTT.wait_msg() #on regarde la boite aux lettres si un msg est arrivé

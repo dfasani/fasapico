@@ -2,11 +2,10 @@ from mqtt import TBDeviceMqttClient
 from phew import connect_to_wifi
 from machine import Pin
 
-WIFI_SSID = "Bbox-D9D06A65"
-WIFI_PASSWORD = "R6W4KEEC41yuPC7t9P"
+WIFI_SSID = "icam_iot"
+WIFI_PASSWORD = "Summ3#C@mp2022"
 
 ip = connect_to_wifi(WIFI_SSID, WIFI_PASSWORD)
-
 
 led = Pin("LED")
 

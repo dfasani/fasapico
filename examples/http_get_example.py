@@ -1,5 +1,5 @@
 #
-# Connection au reseau WiFi
+# Etape 1 : Connection au reseau WiFi
 #
 
 import network
@@ -12,7 +12,7 @@ wlan.connect(WIFI_SSID, WIFI_PASSWORD)
 
 
 #
-# Requete vers le serveur
+# Etape 2 : Requete vers le serveur
 #
 
 import urequests

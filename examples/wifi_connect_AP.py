@@ -6,6 +6,7 @@ WIFI_SSID = "icam_iot"
 WIFI_PASSWORD = "Summ3#C@mp2022"
 
 wlan = network.WLAN(network.STA_IF) #carte reseau en mode STATION
+wlan.active(True) # allume la carte réseau
 wlan.connect(WIFI_SSID, WIFI_PASSWORD)
 
 while not wlan.isconnected() and wlan.status() >= 0:

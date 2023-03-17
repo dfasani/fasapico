@@ -10,6 +10,7 @@ wlan.connect(WIFI_SSID, WIFI_PASSWORD)
 
 while not wlan.isconnected() and wlan.status() >= 0:
     print("J'essaie de me connecter...")
+    wlan.connect(WIFI_SSID, WIFI_PASSWORD)
     time.sleep(1)
 
 print(wlan.ifconfig())

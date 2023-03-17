@@ -12,7 +12,7 @@ wlan.connect(WIFI_SSID, WIFI_PASSWORD)
 
 
 #
-# Faire une requete
+# Requete vers le serveur
 #
 
 import urequests

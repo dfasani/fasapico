@@ -22,13 +22,12 @@ corps = r.content #recupere le corps de la reponse
 r.close() # <-- ULTRA IMPORTANT : FERMER LA REPONSE SINON ON SE FAIT JETER PAR SERVEUR A LA SUIVANTE !!!
 
 
-print("Données non parsées")
-print(corps)
-print()
 
 import json
 data = json.loads(corps)
 print("explo des données")
 
+#tout afficher
+#print(data)
 print( data["places"][0]["place name"] ) # je vais chercher les infos à la clé : "le 'PLACE NAME' du premier élément ('0') des 'PLACES'"
 #print( data["places"][0]["longitude"] ) # je vais chercher les infos à la clé : "la 'LONGITUDE' du premier élément ('0') des 'PLACES'"

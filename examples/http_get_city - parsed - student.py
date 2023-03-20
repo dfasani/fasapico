@@ -29,5 +29,5 @@ print()
 import json
 data = json.loads(corps)
 print("Données parsées")
-print(data['places'][0]) # 0 pour la premiere ville qui correspond a ce code postal (e.g. pour 56890 il y a 3 villes)
-print(data['places'][0]['place name'])
+#print(data['places'][0]) # 0 pour la premiere ville qui correspond a ce code postal (e.g. pour 56890 il y a 3 villes)
+print(data['places'][0]['place name']) # je vais chercher les infos à la clé : "le 'PLACE NAME' du premier élément ('0') des 'PLACES'"

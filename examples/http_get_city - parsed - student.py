@@ -17,7 +17,9 @@ wlan.connect(WIFI_SSID, WIFI_PASSWORD)
 #
 
 import urequests
-r = urequests.get("https://api.zippopotam.us/fr/44210")
+url = "https://api.zippopotam.us/fr/44210"
+print("Envoi d'une requete vers : " + url)
+r = urequests.get(url)
 corps = r.content #recupere le corps de la reponse
 r.close() # <-- ULTRA IMPORTANT : FERMER LA REPONSE SINON ON SE FAIT JETER PAR SERVEUR A LA SUIVANTE !!!
 

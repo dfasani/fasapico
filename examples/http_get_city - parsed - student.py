@@ -1,5 +1,5 @@
 #
-# Connection au reseau WiFi
+# 1. Je me connecte au WiFi
 #
 
 import network
@@ -13,7 +13,7 @@ wlan.connect(WIFI_SSID, WIFI_PASSWORD)
 
 
 #
-# Faire une requete
+# 2. J'envoie une requete
 #
 
 import urequests
@@ -27,7 +27,7 @@ import json
 data = json.loads(corps) #analyse de la réponse
 
 #
-# EXPLORATION DES DONNEES
+# 3. J'explore le résultat
 #
 
 #print(data) #tout afficher

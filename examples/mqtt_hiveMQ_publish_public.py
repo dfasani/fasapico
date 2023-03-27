@@ -7,6 +7,7 @@ WIFI_PASSWORD = "Summ3#C@mp2022"
 
 ip = connect_to_wifi(WIFI_SSID, WIFI_PASSWORD)
 
+#merci de remplacer "tonPrenomTonNomIci" , sinon on va se faire jeter par le serveur
 clientMQTT = MQTTClientSimple(client_id="tonPrenomTonNomIci", server="broker.hivemq.com")
 clientMQTT.connect()
 clientMQTT.publish(topic="bretagne/a3" , msg="bientot le WE !") #tu peux changer de topic et de msg !

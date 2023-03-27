@@ -11,6 +11,7 @@ ip = connect_to_wifi(WIFI_SSID, WIFI_PASSWORD)
 def on_message_callback(topic,msg):
     print("recu >>",topic,msg)
 
+#merci de remplacer "DavidFasani" , sinon on va se faire jeter par le serveur
 clientMQTT = MQTTClientSimple(client_id="DavidFasani", server="broker.hivemq.com")
 clientMQTT.set_callback(on_message_callback)  #que doit-on faire à reception d'un message ? Appeler la fonction on_message_callback()
 clientMQTT.connect()

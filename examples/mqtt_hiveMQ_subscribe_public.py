@@ -13,6 +13,8 @@ clientMQTT = MQTTClientSimple(client_id=b"tonPrenomTonNomIci", server="broker.hi
 clientMQTT.connect() #start connection
 clientMQTT.set_callback(on_message_callback) #a chaque evenement, on appelle la fonction on_message_callback()
 clientMQTT.subscribe("bretagne/a3") #on s'abonne a bretagne/a3
+clientMQTT.subscribe("toulouse/a3") #on s'abonne a toulouse/a3
+clientMQTT.subscribe("lille/a3") #on s'abonne a lille/a3
 
 while True :
     clientMQTT.wait_msg() #on regarde la boite aux lettres si un msg est arrivé

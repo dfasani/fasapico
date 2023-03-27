@@ -6,6 +6,7 @@ WIFI_PASSWORD = "Summ3#C@mp2022"
 
 ip = connect_to_wifi(WIFI_SSID, WIFI_PASSWORD)
 
+#on dit que c'est un callback : cette fonction est donc appelée automatiquement a chaque reception de msg
 def on_message_callback(topic,msg):
     print(topic,msg)
     

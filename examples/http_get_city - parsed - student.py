@@ -1,3 +1,16 @@
+def get_json_from_url(url):
+    import urequests, json
+    #retirer le commentaire pour debuger
+    reponse = urequests.get(url)
+    contenuDeLaReponse = reponse.content #recupere le corps de la reponse
+    reponse.close() # <-- ULTRA IMPORTANT : FERMER LA REPONSE SINON ON SE FAIT JETER PAR SERVEUR A LA SUIVANTE !!!
+    
+    #retirer le commentaire pour debuger
+    #print(corps)
+    
+    data = json.loads(contenuDeLaReponse)
+    return data
+
 #
 # 1. Je me connecte au WiFi
 #
@@ -11,20 +24,11 @@ wlan = network.WLAN(network.STA_IF) #carte reseau en mode STATION
 wlan.active(True)
 wlan.connect(WIFI_SSID, WIFI_PASSWORD)
 
-
 #
 # 2. J'envoie une requete
 #
 
-import urequests
-url = "https://api.zippopotam.us/fr/44210"
-print("Envoi d'une requete vers : " + url)
-r = urequests.get(url)
-corps = r.content #recupere le corps de la reponse
-r.close() # <-- ULTRA IMPORTANT : FERMER LA REPONSE SINON ON SE FAIT JETER PAR SERVEUR A LA SUIVANTE !!!
-
-import json
-data = json.loads(corps) #analyse de la réponse
+data = get_json_from_url(url = "https://api.zippopotam.us/fr/44210")
 
 #
 # 3. J'explore le résultat

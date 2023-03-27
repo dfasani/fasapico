@@ -10,7 +10,8 @@ ip = connect_to_wifi(WIFI_SSID, WIFI_PASSWORD)
 def on_message_callback(topic,msg):
     print(topic,msg)
     
-clientMQTT = MQTTClientSimple(client_id=b"tonPrenomTonNomIci", server="broker.hivemq.com")
+#merci de remplacer "tonPrenomTonNomIci" , sinon on va se faire jeter par le serveur
+clientMQTT = MQTTClientSimple(client_id="tonPrenomTonNomIci", server="broker.hivemq.com")
 clientMQTT.connect() #start connection
 clientMQTT.set_callback(on_message_callback) #a chaque evenement, on appelle la fonction on_message_callback()
 clientMQTT.subscribe("bretagne/a3") #on s'abonne a bretagne/a3

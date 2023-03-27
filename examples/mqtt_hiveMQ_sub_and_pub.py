@@ -28,7 +28,7 @@ Timer(mode=Timer.PERIODIC, period=100, callback=timer_callback)
 
 #Je demande en boucle
 while True :
-    print("Quel topic ?")
+    print("Je publie sur quel topic ?")
     topic = input()
     print("Quel message ?")
     msg = input()

@@ -22,9 +22,9 @@ def get_distance(pin_number):
     
     return distance
 
-#how to use it
+#Comment utiliser la fonction :
 #from GroveUltrasonicRanger import get_distance
 #while True:
-#    distanceLue = get_distance(pin_number=27)
-#    print("The distance from object is", distanceLue, "cm")
+#    distanceLuePin27 = get_distance(pin_number=27)
+#    print("The distance from object is", distanceLuePin27, "cm")
 #    utime.sleep(0.2)

@@ -12,7 +12,10 @@ led = Pin("LED")
 # Callback for server RPC requests
 # cette fonction est appelée lorsque l'utilisateur agit dans le dashboard
 def rpc_request_callback(client, request_id, request_body):
-    print("received rpc: id="+ str(request_id) + " request_body=" + str(request_body))  
+    print( str(request_id)  , str(request_body))  
+    # --
+    # -- C EST ICI QU IL FAUT MODIFIER LE CODE
+    # --
     
 # Connect to ThingsBoard
 client = TBDeviceMqttClient('demo.thingsboard.io', access_token='cleTopSecreteNePasDiffuser')

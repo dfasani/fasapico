@@ -122,8 +122,8 @@ class MQTTClientSimple:
 
     def ping(self):
         self.sock.write(b"\xc0\0")
-
-    def publish(self, topic, msg, retain=False, qos=0):
+    #David : inversion ordre : qos et retain
+    def publish(self, topic, msg , qos=0 , retain=False):
         pkt = bytearray(b"\x30\0\0\0")
         pkt[0] |= qos << 1 | retain
         sz = 2 + len(topic) + len(msg)

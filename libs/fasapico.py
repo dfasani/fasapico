@@ -58,3 +58,21 @@ def access_point(ssid, password = None):
   wlan.active(True)
 
   return wlan
+
+
+
+def get_json_from_url(url):
+    import urequests, json
+    
+    #retirer le commentaire pour debuger
+    #print("Sending request to :",url)
+    
+    reponse = urequests.get(url)
+    contenuDeLaReponse = reponse.content #recupere le corps de la reponse
+    reponse.close() # <-- ULTRA IMPORTANT : FERMER LA REPONSE SINON ON SE FAIT JETER PAR SERVEUR A LA SUIVANTE !!!
+    
+    #retirer le commentaire pour debuger
+    #print(corps)
+    
+    jsonData = json.loads(contenuDeLaReponse)
+    return jsonData

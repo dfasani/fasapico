@@ -1,7 +1,8 @@
-from machine import Pin 
+from machine import Pin, ADC
 from bluetooth import BLE
 from ble import BLESimplePeripheral
 import binascii
+from time import sleep
 
 # Create a Pin object for the onboard LED, configure it as an output
 led = Pin("LED", Pin.OUT)
@@ -26,6 +27,24 @@ mac_bytes = bluetoothLowEnergy.config('mac')[1]
 mac_str = binascii.hexlify(mac_bytes).decode()
 print("adresse MAC" , mac_str)
 
+#temp sensor setup
+temp_sensor = machine.ADC(4)
+conversion_factor = 3.3 / (65535)
+ 
+
 # Start an infinite loop
 while True:
-    pass
+    if sp.is_connected():
+        
+        #temp reading and conversion
+        reading = temp_sensor.read_u16() * conversion_factor 
+        tempDeg = 27 - (reading - 0.706)/0.001721
+
+        #data formating and sending
+        data = "[T"+str(tempDeg) + "]"
+        print("TX", data)
+        sp.send(data)
+        
+        
+        sleep(1)
+

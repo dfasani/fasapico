@@ -1,5 +1,4 @@
-#Library credits: RRoy https://community.dfrobot.com/makelog-310469.html
- 
+
 import ubinascii
 import time
 from machine import UART,I2C,Pin

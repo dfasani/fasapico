@@ -884,13 +884,29 @@ class bmm150(object):
 
 
 class bmm150_I2C(bmm150):
+    
+    
   '''!
     @brief An example of an i2c interface module
   '''
-  def __init__(self, addr, idI2C=0 , sclPin=5 , sdaPin=4):
+    #I2C_BUS         = 0x01   #default use I2C1
+    # I2C address select, that CS and SDO pin select 1 or 0 indicates the high or low level respectively. There are 4 combinations: 
+  ADDRESS_0       = 0x10   # (CSB:0 SDO:0)
+  ADDRESS_1       = 0x11   # (CSB:0 SDO:1)
+  ADDRESS_2       = 0x12   # (CSB:1 SDO:0)
+  ADDRESS_3       = 0x13   # (CSB:1 SDO:1) default i2c address
+  
+  #par defaut adresse 0x13 i2c 0 ,sda=0 et scl = 1
+  
+  def __init__(self, addr=ADDRESS_3, idI2C=0 , sclPin=1 , sdaPin=0):
     self.__addr = addr
     super(bmm150_I2C, self).__init__(idI2C , sclPin , sdaPin)
-
+    
+    self.set_operation_mode(bmm150.POWERMODE_NORMAL)
+    self.set_preset_mode(bmm150.PRESETMODE_HIGHACCURACY)
+    self.set_rate(bmm150.RATE_10HZ)
+    self.set_measurement_xyz()
+    
   def write_reg(self, reg, data):
     '''!
       @brief writes data to a register

@@ -84,7 +84,6 @@ import bluetooth
 import random
 import struct
 import time
-from ble_advertising import advertising_payload
 from machine import Pin, ADC
 
 from micropython import const

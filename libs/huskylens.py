@@ -27,13 +27,33 @@ COMMAND_REQUEST_FIRMWARE_VERSION = 0x3C
  
 class HuskyLens:
   def __init__(self, proto , sdaPin=26 , sclPin=27,  i2cid=1):
+    
+    time.sleep_ms(100)
+      
     self.proto=proto
     self.address=0x32
-    if(self.proto=="SERIAL"):
+    if self.proto=="SERIAL" :
       self.huskylensSer = UART(2,baudrate=9600,rx=33,tx=32,timeout=100)
     else :
-      self.huskylensSer = I2C(i2cid, scl=Pin(sclPin), sda=Pin(sdaPin), freq=100000)
+      
+      #David : if init fails, give a 10 sec retry loop!
+      
+      timeout = time.time() + 10 # 10 sec
+      while True:
+          
+          self.huskylensSer = I2C(i2cid, scl=Pin(sclPin), sda=Pin(sdaPin), freq=10000)
+      
+          print(self.huskylensSer.scan())
+          
+          if len(self.huskylensSer.scan()) > 0 or time.time() > timeout:
+              break
+            
+          time.sleep_ms(100)
+
+      
     self.lastCmdSent = ""
+    
+    
  
   def writeToHuskyLens(self, cmd):
     self.lastCmdSent = cmd
@@ -365,3 +385,5 @@ class HuskyLens:
     cmd = self.cmdToBytes(cmd)
     self.writeToHuskyLens(cmd)
     return self.processReturnData() 
+
+

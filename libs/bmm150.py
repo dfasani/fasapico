@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 
 import utime
-from machine import I2C,Pin
+from machine import I2C,Pin, SoftI2C
 import math
 
 
@@ -129,11 +129,24 @@ class bmm150(object):
   NO_DATA                        = -32768
   __txbuf          = [0]          # i2c send buffer
   __threshold_mode = 2
-  def __init__(self , idI2C=0 , sclPin=5 , sdaPin=4):
+  def __init__(self , idI2C , sdaPin , sclPin):
     #self.i2cbus = I2C(1,sda=Pin(2),scl=Pin(3))
     #david
     #i2c = machine.I2C(id=0,scl=machine.Pin(5), sda=machine.Pin(4))
-    self.i2cbus = I2C(id=idI2C,scl=Pin(sclPin), sda=Pin(sdaPin))
+    #print("Magnetic compass\tidI2C" , idI2C, "sdaPin" , sdaPin , "sclPin" ,sclPin )
+      
+    
+    #David : if init fails, give a 10 sec retry loop!
+    #self.i2cbus = SoftI2C(scl=Pin(sclPin), sda=Pin(sdaPin))
+      
+    timeout = utime.time() + 10 # 10 sec
+    while True:  
+      #self.i2cbus = I2C(id=idI2C,scl=Pin(sclPin), sda=Pin(sdaPin))
+        self.i2cbus = SoftI2C(scl=Pin(sclPin), sda=Pin(sdaPin))
+        if len(self.i2cbus.scan()) > 0 or utime.time() > timeout:
+            break
+        
+        utime.sleep_ms(100)
 
 
   def sensor_init(self):
@@ -882,10 +895,10 @@ class bmm150(object):
     rslt = self.read_reg(self.REG_INTERRUPT_STATUS, 1)
     return (rslt[0]&0x38)>>3
 
-
-class bmm150_I2C(bmm150):
-    
-    
+ 
+class bmm150_I2C(bmm150): 
+     
+     
   '''!
     @brief An example of an i2c interface module
   '''
@@ -898,9 +911,9 @@ class bmm150_I2C(bmm150):
   
   #par defaut adresse 0x13 i2c 0 ,sda=0 et scl = 1
   
-  def __init__(self, addr=ADDRESS_3, idI2C=0 , sclPin=1 , sdaPin=0):
+  def __init__(self, addr=ADDRESS_3, idI2C=0 , sdaPin=0 , sclPin=1):
     self.__addr = addr
-    super(bmm150_I2C, self).__init__(idI2C , sclPin , sdaPin)
+    super(bmm150_I2C, self).__init__(idI2C , sdaPin , sclPin)
     
     self.set_operation_mode(bmm150.POWERMODE_NORMAL)
     self.set_preset_mode(bmm150.PRESETMODE_HIGHACCURACY)

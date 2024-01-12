@@ -1,4 +1,5 @@
-from machine import Pin, I2C
+#from machine import Pin, I2C
+from machine import Pin, I2C, SoftI2C
 import utime
 
 class Grove_LCD_I2C(object):
@@ -26,7 +27,7 @@ class Grove_LCD_I2C(object):
     LCD_BLINKON = 0x01
     LCD_BLINKOFF = 0x00
 
-    # Flags for display/cursor shift
+    # Flags for display/cursor shift 
     LCD_DISPLAYMOVE = 0x08
     LCD_CURSORMOVE = 0x00
     LCD_MOVERIGHT = 0x04
@@ -36,14 +37,26 @@ class Grove_LCD_I2C(object):
     LCD_8BITMODE = 0x10
     LCD_4BITMODE = 0x00
     LCD_2LINE = 0x08
-    LCD_1LINE = 0x00
+    LCD_1LINE = 0x00 
     LCD_5x10DOTS = 0x04
     LCD_5x8DOTS = 0x00
-
+ 
     def __init__(self, i2c_num=0, sda_pin=4, scl_pin=5 ,address=62, oneline=False, charsize=LCD_5x8DOTS):
-        i2c = I2C(i2c_num, sda=Pin(sda_pin), scl=Pin(scl_pin))
+        
+        #print("LCD\t\t\tidI2C" , i2c_num, "sdaPin" , sda_pin , "sclPin" ,scl_pin )
 
-        self.i2c = i2c
+        #David : if init fails, give a 10 sec retry loop!
+      
+        timeout = utime.time() + 10 # 10 sec
+        while True:
+            #i2cGrove = I2C(i2c_num, sda=Pin(sda_pin), scl=Pin(scl_pin), freq=1000)
+            i2cGrove = SoftI2C(sda=Pin(sda_pin), scl=Pin(scl_pin),)
+            if len(i2cGrove.scan()) > 0 or utime.time() > timeout:
+                break
+
+            utime.sleep_ms(100)
+
+        self.i2c = i2cGrove
         self.address = address
 
         self.disp_func = self.LCD_DISPLAYON # | 0x10

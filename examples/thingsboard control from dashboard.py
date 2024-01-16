@@ -1,5 +1,5 @@
 from mqtt import TBDeviceMqttClient
-from phew import connect_to_wifi
+from fasapico import *
 from machine import Pin
 
 WIFI_SSID = "icam_iot"

@@ -20,5 +20,13 @@ jsonData = get_json_from_url(url = "https://api.quotable.io/random")
 #
 # 3. J'exploite le résultat
 #
+print("tout ce que je reçois :")
 print(jsonData) #tout afficher
+print()
+
+print("auteur :")
 print(jsonData['authorSlug'] ) #afficher l'auteur uniquement
+print()
+
+print("citation :")
+print(jsonData['content'] ) #afficher l'auteur uniquement

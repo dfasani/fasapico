@@ -29,4 +29,4 @@ print(jsonData['authorSlug'] ) #afficher l'auteur uniquement
 print()
 
 print("citation :")
-print(jsonData['content'] ) #afficher l'auteur uniquement
+print( ) #afficher la CITATION uniquement

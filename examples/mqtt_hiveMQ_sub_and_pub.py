@@ -1,12 +1,8 @@
 from mqtt import MQTTClientSimple
-from phew import connect_to_wifi
-from time import sleep
+from fasapico import *
 from machine import Timer
 
-WIFI_SSID = "icam_iot"
-WIFI_PASSWORD = "Summ3#C@mp2022"
-
-ip = connect_to_wifi(WIFI_SSID, WIFI_PASSWORD)
+ip = connect_to_wifi(ssid="icam_iot", password = "Summ3#C@mp2022")
 
 def on_message_callback(topic,msg):
     print("recu >>",topic,msg)

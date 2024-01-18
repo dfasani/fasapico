@@ -21,10 +21,3 @@ def get_distance(pin_number):
     distance = (timepassed * 0.0343) / 2
     
     return distance
-
-#Comment utiliser la fonction :
-#from GroveUltrasonicRanger import get_distance
-#while True:
-#    distanceLuePin27 = get_distance(pin_number=27)
-#    print("The distance from object is", distanceLuePin27, "cm")
-#    utime.sleep(0.2)

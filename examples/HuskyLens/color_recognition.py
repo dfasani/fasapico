@@ -1,7 +1,7 @@
 from huskylens import HuskyLens
-import time
+from time import sleep_ms
 
-#default parameters values are : sdaPin=26 , sclPin=27,  i2cid=1
+#default parameters values are : sdaPin=26 , sclPin=27
 husky = HuskyLens("I2C") 
  
 #activation du mode reconnaissance de couleur
@@ -11,4 +11,4 @@ while True:
     result = husky.command_request()
     print(result)
 
-    time.sleep_ms(100)
+    sleep_ms(100)

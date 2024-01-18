@@ -129,15 +129,7 @@ class bmm150(object):
   NO_DATA                        = -32768
   __txbuf          = [0]          # i2c send buffer
   __threshold_mode = 2
-  def __init__(self , idI2C , sdaPin , sclPin):
-    #self.i2cbus = I2C(1,sda=Pin(2),scl=Pin(3))
-    #david
-    #i2c = machine.I2C(id=0,scl=machine.Pin(5), sda=machine.Pin(4))
-    #print("Magnetic compass\tidI2C" , idI2C, "sdaPin" , sdaPin , "sclPin" ,sclPin )
-      
-    
-    #David : if init fails, give a 10 sec retry loop!
-    #self.i2cbus = SoftI2C(scl=Pin(sclPin), sda=Pin(sdaPin))
+  def __init__(self , sdaPin , sclPin):
       
     timeout = utime.time() + 10 # 10 sec
     while True:  
@@ -911,9 +903,9 @@ class bmm150_I2C(bmm150):
   
   #par defaut adresse 0x13 i2c 0 ,sda=0 et scl = 1
   
-  def __init__(self, addr=ADDRESS_3, idI2C=0 , sdaPin=0 , sclPin=1):
+  def __init__(self, addr=ADDRESS_3,  sdaPin=0 , sclPin=1):
     self.__addr = addr
-    super(bmm150_I2C, self).__init__(idI2C , sdaPin , sclPin)
+    super(bmm150_I2C, self).__init__( sdaPin , sclPin)
     
     self.set_operation_mode(bmm150.POWERMODE_NORMAL)
     self.set_preset_mode(bmm150.PRESETMODE_HIGHACCURACY)

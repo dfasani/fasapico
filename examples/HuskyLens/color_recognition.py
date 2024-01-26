@@ -8,7 +8,14 @@ husky = HuskyLens("I2C")
 husky.color_recognition_mode()
  
 while True:
-    result = husky.command_request()
-    print(result)
-
+    reponseHuskyLens = husky.command_request()
+    
+    if len(reponseHuskyLens) > 0 :
+        x 		= reponseHuskyLens[0][0]
+        y 		= reponseHuskyLens[0][1]
+        largeur	= reponseHuskyLens[0][2]
+        hauteur	= reponseHuskyLens[0][3]
+        
+        print( "x" , x , "y" , y , "largeur" , largeur , "hauteur" , hauteur)
+    
     sleep_ms(100)

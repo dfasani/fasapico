@@ -11,10 +11,10 @@ while True:
     reponseHuskyLens = husky.command_request()
     
     if len(reponseHuskyLens) > 0 :
-        x 		= reponseHuskyLens[0][0]
-        y 		= reponseHuskyLens[0][1]
-        largeur	= reponseHuskyLens[0][2]
-        hauteur	= reponseHuskyLens[0][3]
+        x 		= reponseHuskyLens[0][0]     #asbcisse du centre du carré
+        y 		= reponseHuskyLens[0][1]     #ordonnée du centre du carré
+        largeur	= reponseHuskyLens[0][2] #largeur du carré
+        hauteur	= reponseHuskyLens[0][3] #hauteur du carré
         
         print( "x" , x , "y" , y , "largeur" , largeur , "hauteur" , hauteur)
     

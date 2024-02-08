@@ -58,7 +58,9 @@ def runStepper(nbPas):
 
 while True :
   print("a droite")
-  runStepper(30)
+  runStepper(-100)
+  sleep_ms(500)
   
   print("a gauche")
-  runStepper(-30)
+  runStepper(100)
+  sleep_ms(500)

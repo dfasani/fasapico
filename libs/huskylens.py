@@ -139,7 +139,8 @@ class HuskyLens:
             tmp=[]
           return finalData
       except:
-         print("Read error")
+         #maj David 26 02 2024
+         #print("Read error")
          return []
          
   def command_request_knock(self):

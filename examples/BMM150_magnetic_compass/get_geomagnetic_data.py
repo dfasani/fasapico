@@ -15,6 +15,6 @@ while True:
   degree = compasNumerique.get_compass_degree() 
 
   #affichage
-  print("the angle between the pointing direction and north is: %.2f "%degree) 
+  print("the angle between the pointing direction and north is:  " + str(int(degree))) 
   
   sleep(1)

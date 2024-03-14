@@ -5,6 +5,8 @@ from machine import Timer
 ip = connect_to_wifi(ssid="icam_iot", password = "Summ3#C@mp2022")
 
 def on_message_callback(topic,msg):
+    topic = topic.decode('utf-8')
+    msg = msg.decode('utf-8')
     print("recu >>",topic,msg)
 
 #merci de remplacer "DavidFasani" , sinon on va se faire jeter par le serveur

@@ -5,7 +5,9 @@ ip = connect_to_wifi(ssid="icam_iot", password = "Summ3#C@mp2022")
 
 #on dit que c'est un callback : cette fonction est donc appelée automatiquement a chaque reception de msg
 def on_message_callback(topic,msg):
-    print(topic,msg)
+    topic = topic.decode('utf-8')
+    msg = msg.decode('utf-8')
+    print("recu >>",topic,msg)
     
 #merci de remplacer "tonPrenomTonNomIci" , sinon on va se faire jeter par le serveur
 clientMQTT = MQTTClientSimple(client_id="tonPrenomTonNomIci", server="broker.hivemq.com")

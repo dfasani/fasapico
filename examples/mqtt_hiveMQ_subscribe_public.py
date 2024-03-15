@@ -19,3 +19,4 @@ clientMQTT.subscribe("lille/a3") #on s'abonne a lille/a3
 
 while True :
     clientMQTT.wait_msg() #on regarde la boite aux lettres si un msg est arrivé
+    #n'ajoute pas de code ici stp --> c'est la fonction on_message_callback() qu'on va completer

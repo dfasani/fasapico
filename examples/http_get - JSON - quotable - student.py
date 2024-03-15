@@ -14,8 +14,9 @@ ip = connect_to_wifi(WIFI_SSID, WIFI_PASSWORD)
 #
 # 2. J'envoie une requete
 #
-
-jsonData = get_json_from_url(url = "https://api.quotable.io/random")
+urlSagesse = "https://api.quotable.io/random"
+print(urlSagesse)
+jsonData = get_json_from_url(urlSagesse)
 
 #
 # 3. J'exploite le résultat

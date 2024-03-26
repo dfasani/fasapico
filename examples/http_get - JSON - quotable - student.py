@@ -5,11 +5,8 @@ from fasapico import *
 #
 
 #change si necessaire
-WIFI_SSID = "icam_iot"
-WIFI_PASSWORD = "Summ3#C@mp2022"
-
-ip = connect_to_wifi(WIFI_SSID, WIFI_PASSWORD)
-#print("Connected to WiFi (" +ip+")")
+ip = connect_to_wifi(ssid = "icam_iot", password = "Summ3#C@mp2022")
+print("Connected to WiFi (" +ip+")")
 
 #
 # 2. J'envoie une requete

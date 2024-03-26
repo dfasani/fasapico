@@ -1,3 +1,5 @@
+import network, time, urequests, json
+
 # scale a value x from one range [in_min, in_max] to a new range [out_min, out_max]
 def scale(x, in_min, in_max, out_min, out_max):
     """ Maps two ranges together """
@@ -9,14 +11,11 @@ def scale_to_int(x, in_min, in_max, out_min, out_max):
 
 
 def is_connected_to_wifi():
-  import network, time
   wlan = network.WLAN(network.STA_IF)
   return wlan.isconnected()
 
 # helper method to quickly get connected to wifi
 def connect_to_wifi(ssid, password, timeout_seconds=30):
-  import network, time
-
   statuses = {
     network.STAT_IDLE: "idle",
     network.STAT_CONNECTING: "connecting",
@@ -46,7 +45,6 @@ def connect_to_wifi(ssid, password, timeout_seconds=30):
 
 # helper method to put the pico into access point mode
 def access_point(ssid, password = None):
-  import network
 
   # start up network in access point mode  
   wlan = network.WLAN(network.AP_IF)
@@ -59,13 +57,10 @@ def access_point(ssid, password = None):
 
   return wlan
 
-
-
-def get_json_from_url(url):
-    import urequests, json
-    
+def get_url(url):
+   
     #retirer le commentaire pour debuger
-    #print("Sending request to :",url)
+    print("Je recupere la ressource :",url)
     
     reponse = urequests.get(url)
     contenuDeLaReponse = reponse.content #recupere le corps de la reponse
@@ -73,6 +68,13 @@ def get_json_from_url(url):
     
     #retirer le commentaire pour debuger
     #print(corps)
+    return contenuDeLaReponse
+
+def get_json_from_url(url):
+    #recuperation du document
+    contenuDeLaReponse = get_url(url)
+
+    print("Je transforme cette chaine en objet JSON :" , contenuDeLaReponse)
     
     jsonData = json.loads(contenuDeLaReponse)
     return jsonData

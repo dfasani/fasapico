@@ -1,11 +1,11 @@
 # -*- coding:utf-8 -*-
 from bmm150 import *
-from time import sleep
-
-compasNumerique = bmm150_I2C()
+from time import *
 
 #initialisation du compas numérique
 #valeur par defaut sda=0, scl=1
+compasNumerique = bmm150_I2C()
+
 while compasNumerique.ERROR == compasNumerique.sensor_init():
     print("sensor init error, please check wiring") 
     sleep(1)

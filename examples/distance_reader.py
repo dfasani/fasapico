@@ -1,5 +1,5 @@
-from GroveUltrasonicRanger import get_distance
-from utime import sleep
+from GroveUltrasonicRanger import *
+from time import *
 
 print("C'est parti !")
 

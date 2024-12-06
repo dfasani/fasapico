@@ -13,8 +13,8 @@ while True:
     for x in str(gpsModule.readline()):
         gpsDecoder.update(x)
     
-    print( "latitude" + str( my_gps.latitude) )
-    print( "longitude"+ str( my_gps.longitude) )
+    print( "latitude" + str( gpsDecoder.latitude) )
+    print( "longitude"+ str( gpsDecoder.longitude) )
     print()
 
     sleep(1)

@@ -3,6 +3,8 @@ from time import *
 from micropyGPS import *
 from bmm150 import *
 
+#micropyGPS disponible ici : https://github.com/inmcm/micropyGPS/blob/master/micropyGPS.py
+
 # délai d'une seconde avant l'initialisation
 sleep(1)  
 

@@ -903,14 +903,25 @@ class bmm150_I2C(bmm150):
   
   #par defaut adresse 0x13 i2c 0 ,sda=0 et scl = 1
   
-  def __init__(self, addr=ADDRESS_3,  sdaPin=0 , sclPin=1):
+  def __init__(self, addr=ADDRESS_3, sdaPin=0, sclPin=1):
     self.__addr = addr
-    super(bmm150_I2C, self).__init__( sdaPin , sclPin)
-    
-    self.set_operation_mode(bmm150.POWERMODE_NORMAL)
-    self.set_preset_mode(bmm150.PRESETMODE_HIGHACCURACY)
-    self.set_rate(bmm150.RATE_10HZ)
-    self.set_measurement_xyz()
+    retry_count = 5
+    while retry_count > 0:
+      try:
+        super(bmm150_I2C, self).__init__(sdaPin, sclPin)
+        self.set_operation_mode(bmm150.POWERMODE_NORMAL)
+        self.set_preset_mode(bmm150.PRESETMODE_HIGHACCURACY)
+        self.set_rate(bmm150.RATE_10HZ)
+        self.set_measurement_xyz()
+        break
+      except OSError as e:
+        if e.errno == 19:  # ENODEV
+          retry_count -= 1
+          utime.sleep(1)
+        else:
+          raise e
+    else:
+      raise OSError("Failed to initialize bmm150_I2C after multiple attempts")
     
   def write_reg(self, reg, data):
     '''!

@@ -901,27 +901,35 @@ class bmm150_I2C(bmm150):
   ADDRESS_2       = 0x12   # (CSB:1 SDO:0)
   ADDRESS_3       = 0x13   # (CSB:1 SDO:1) default i2c address
   
-  #par defaut adresse 0x13 i2c 0 ,sda=0 et scl = 1
-  
-  def __init__(self, addr=ADDRESS_3, sdaPin=0, sclPin=1):
-    self.__addr = addr
-    retry_count = 5
-    while retry_count > 0:
-      try:
-        super(bmm150_I2C, self).__init__(sdaPin, sclPin)
-        self.set_operation_mode(bmm150.POWERMODE_NORMAL)
-        self.set_preset_mode(bmm150.PRESETMODE_HIGHACCURACY)
-        self.set_rate(bmm150.RATE_10HZ)
-        self.set_measurement_xyz()
-        break
-      except OSError as e:
-        if e.errno == 19:  # ENODEV
-          retry_count -= 1
-          utime.sleep(1)
-        else:
-          raise e
-    else:
-      raise OSError("Failed to initialize bmm150_I2C after multiple attempts")
+  def __init__(self, addr=ADDRESS_3, sdaPin=0, sclPin=1, retries=5, delay=1):
+        self.__addr = addr
+        self.sdaPin = sdaPin
+        self.sclPin = sclPin
+        self.retries = retries
+        self.delay = delay
+        
+        # Tentatives de connexion avec des retries
+        for attempt in range(self.retries):
+            try:
+                # Appel du constructeur de la classe mère (initialisation I2C)
+                super(bmm150_I2C, self).__init__(self.sdaPin, self.sclPin)
+                
+                # Initialisation des paramètres
+                self.set_operation_mode(bmm150.POWERMODE_NORMAL)
+                self.set_preset_mode(bmm150.PRESETMODE_HIGHACCURACY)
+                self.set_rate(bmm150.RATE_10HZ)
+                self.set_measurement_xyz()
+
+                #print("bmm150 : Périphérique détecté et initialisé avec succès!")
+                break  # Si ça réussit, on sort de la boucle
+            except OSError as e:
+                #print(f"bmm150 : Tentative {attempt + 1} échouée: {e}")
+                if attempt < self.retries - 1:  # Si ce n'est pas la dernière tentative
+                    utime.sleep(self.delay)  # Attendre un peu avant de réessayer
+                else:
+                    print("bmm150 : Échec après plusieurs tentatives.")
+                    raise  # Relancer l'exception si les tentatives échouent
+
     
   def write_reg(self, reg, data):
     '''!

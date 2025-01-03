@@ -8,3 +8,9 @@ valeurSaisie = int(input()) #transforme la chaine saisie par l'utilisateur en un
 valeurEntreOet100 = scale(valeurSaisie , 0 , 65535 , 0 , 100)
 
 print( valeurSaisie , " donne " , valeurEntreOet100 , " %" )
+
+
+#mise a l'échelle dans l'intervalle [0,100] en entier
+valeurEntiereEntreOet100 = scale_to_int(valeurSaisie , 0 , 65535 , 0 , 100)
+
+print( valeurSaisie , " donne " , valeurEntiereEntreOet100 , " %" )

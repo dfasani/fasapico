@@ -100,6 +100,7 @@ class Grove_LCD_I2C(object):
         self.i2c.writeto_mem(self.address, 0x40, c)
 
     def write(self, text):
+        text = str(text) #conversion auto en STR
         for char in text:
             if char == '\n':
                 self.cursor_position(0, 1)

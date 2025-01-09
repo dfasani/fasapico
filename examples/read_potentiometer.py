@@ -1,9 +1,9 @@
 from time import *
 from machine import *
  
-adc = ADC(27) #use the CAN on Pin 27
+adc = ADC(27) #on utilise le CAN (Convertisseur Analogique Numérique) de la broche 27
  
 while True:
-    reading = adc.read_u16()   #value between [0-65535]  
-    print("ADC: " + str(reading))
-    sleep(0.2)     #do not read to frequentrly
+    valeurLue = adc.read_u16()   #valeur dans l'intervalle [0-65535]  
+    print("ADC: " + str(valeurLue))
+    sleep(0.1)     #il ne faut pas solliciter le CAN "trop" souvent

@@ -74,6 +74,44 @@ def get_json_from_url(url):
     #recuperation du document
     contenuDeLaReponse = get_url(url)
 
+
+
+
+class Moteur:
+    def __init__(self, broche_in1, broche_in2, broche_pwm , vitesse=0):
+        self.in1 = Pin(broche_in1, Pin.OUT)
+        self.in2 = Pin(broche_in2, Pin.OUT)
+        self.pwm = PWM(broche_pwm , freq=1000 , duty_u16=0)
+        self.definir_vitesse(vitesse)
+        
+
+    def definir_vitesse(self, gaz):
+        """
+        Définit la vitesse (0 à 65535).
+        Si la vitesse est un float, elle est convertie en int.
+        Lève une exception si la valeur est hors limites.
+        """
+        if isinstance(gaz, float):
+            vitesse = int(gaz)
+        if not (0 <= gaz <= 65535):
+            raise ValueError("La vitesse doit être un entier entre 0 et 65535.")
+        self.pwm.duty_u16(gaz)
+
+    def avant(self):
+        """Active la rotation en avant."""
+        self.in1.low()
+        self.in2.high()
+
+    def arriere(self):
+        """Active la rotation en arrière."""
+        self.in1.high()
+        self.in2.low()
+
+    def stop(self):
+        """Arrête le moteur."""
+        self.in1.low()
+        self.in2.low()
+
     print("Je transforme cette chaine en objet JSON :" , contenuDeLaReponse)
     
     jsonData = json.loads(contenuDeLaReponse)

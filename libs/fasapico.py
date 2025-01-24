@@ -73,8 +73,10 @@ def get_url(url):
 def get_json_from_url(url):
     #recuperation du document
     contenuDeLaReponse = get_url(url)
-
-
+    print("Je transforme cette chaine en objet JSON :" , contenuDeLaReponse)
+    
+    jsonData = json.loads(contenuDeLaReponse)
+    return jsonData
 
 
 class Moteur:
@@ -111,8 +113,3 @@ class Moteur:
         """Arrête le moteur."""
         self.in1.low()
         self.in2.low()
-
-    print("Je transforme cette chaine en objet JSON :" , contenuDeLaReponse)
-    
-    jsonData = json.loads(contenuDeLaReponse)
-    return jsonData

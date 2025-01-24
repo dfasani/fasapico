@@ -1,4 +1,5 @@
 import network, time, urequests, json
+from machine import *
 
 # scale a value x from one range [in_min, in_max] to a new range [out_min, out_max]
 def scale(x, in_min, in_max, out_min, out_max):

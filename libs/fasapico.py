@@ -81,12 +81,18 @@ def get_json_from_url(url):
 
 
 class Moteur:
-    def __init__(self, broche_in1, broche_in2, broche_pwm , vitesse=0):
+    def __init__(self, broche_in1, broche_in2, broche_pwm, vitesse=0):
+        """
+        Initialise le moteur avec les broches spécifiées et une vitesse initiale a 0 par defaut.
+        """
+        if not all(isinstance(b, int) and 0 <= b <= 27 for b in [broche_in1, broche_in2, broche_pwm]):
+            raise ValueError("Les broches doivent être des entiers valides pour la plateforme.")
+        
         self.in1 = Pin(broche_in1, Pin.OUT)
         self.in2 = Pin(broche_in2, Pin.OUT)
-        self.pwm = PWM(broche_pwm , freq=1000 , duty_u16=0)
+        self.pwm = PWM(Pin(broche_pwm), freq=1000, duty_u16=0)
+        self.etat = "arrêté"  # "avant", "arrière", ou "arrêté"
         self.definir_vitesse(vitesse)
-        
 
     def definir_vitesse(self, gaz):
         """
@@ -95,22 +101,65 @@ class Moteur:
         Lève une exception si la valeur est hors limites.
         """
         if isinstance(gaz, float):
-            vitesse = int(gaz)
+            gaz = int(gaz)
         if not (0 <= gaz <= 65535):
             raise ValueError("La vitesse doit être un entier entre 0 et 65535.")
         self.pwm.duty_u16(gaz)
+
+    def definir_vitesse_pourcentage(self, pourcentage):
+        """
+        Définit la vitesse en pourcentage (0 à 100).
+        """
+        if not (0 <= pourcentage <= 100):
+            raise ValueError("Le pourcentage doit être entre 0 et 100.")
+        gaz = scale_to_int(pourcentage, 0, 100, 0, 65535)
+        self.definir_vitesse(gaz)
 
     def avant(self):
         """Active la rotation en avant."""
         self.in1.low()
         self.in2.high()
+        self.etat = "avant"
 
     def arriere(self):
         """Active la rotation en arrière."""
         self.in1.high()
         self.in2.low()
+        self.etat = "arrière"
 
     def stop(self):
         """Arrête le moteur."""
         self.in1.low()
         self.in2.low()
+        self.etat = "arrêté"
+
+    def set_direction_et_vitesse(self, direction, vitesse):
+        """
+        Définit la direction ('avant' ou 'arrière') et la vitesse.
+        """
+        if direction == "avant":
+            self.avant()
+        elif direction == "arrière":
+            self.arriere()
+        else:
+            raise ValueError("La direction doit être 'avant' ou 'arrière'.")
+        self.definir_vitesse(vitesse)
+
+    def arret_progressif(self, pas=500):
+        """
+        Réduit progressivement la vitesse jusqu'à 0 avant d'arrêter le moteur.
+        """
+        vitesse_actuelle = self.pwm.duty_u16()
+        for v in range(vitesse_actuelle, -1, -pas):
+            self.definir_vitesse(max(0, v))
+            time.sleep(0.05)  # Pause pour donner le temps au moteur de ralentir
+        self.stop()
+
+    def get_etat(self):
+        """
+        Retourne l'état actuel du moteur.
+        """
+        return {
+            "direction": self.etat,
+            "vitesse": self.pwm.duty_u16()
+        }

@@ -125,21 +125,21 @@ class Moteur:
         """Active la rotation en arrière."""
         self.in1.high()
         self.in2.low()
-        self.etat = "arrière"
+        self.etat = "arriere"
 
     def stop(self):
         """Arrête le moteur."""
         self.in1.low()
         self.in2.low()
-        self.etat = "arrêté"
+        self.etat = "stop"
 
     def set_direction_et_vitesse(self, direction, vitesse):
         """
-        Définit la direction ('avant' ou 'arrière') et la vitesse.
+        Définit la direction ('avant' ou 'arriere') et la vitesse.
         """
         if direction == "avant":
             self.avant()
-        elif direction == "arrière":
+        elif direction == "arriere":
             self.arriere()
         else:
             raise ValueError("La direction doit être 'avant' ou 'arrière'.")
@@ -164,3 +164,7 @@ class Moteur:
             "direction": self.etat,
             "vitesse": self.pwm.duty_u16()
         }
+    
+    def __str__(self):
+        # Retourne une chaîne de caractères contenant l'état du moteur
+        return f"Moteur({self.in1}, {self.in2}, {self.pwm}, Etat: {self.etat}, PWM: {self.pwm.duty_u16()})"

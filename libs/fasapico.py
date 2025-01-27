@@ -153,6 +153,7 @@ class Moteur:
         for v in range(vitesse_actuelle, -1, -pas):
             self.definir_vitesse(max(0, v))
             time.sleep(0.05)  # Pause pour donner le temps au moteur de ralentir
+        self.definir_vitesse(0)
         self.stop()
 
     def get_etat(self):

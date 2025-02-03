@@ -11,9 +11,9 @@ print("Connected to WiFi (" +ip+")")
 #
 # 2. J'envoie une requete
 #
-urlSagesse = "https://api.quotable.io/random"
-print(urlSagesse)
-jsonData = get_json_from_url(urlSagesse)
+urlDemandee = "https://api.quotable.io/random"
+print(urlDemandee)
+jsonData = get_json_from_url(urlDemandee)
 
 #
 # 3. J'exploite le résultat

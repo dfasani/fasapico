@@ -19,12 +19,8 @@ jsonData = get_json_from_url(urlDemandee)
 # 3. J'exploite le résultat
 #
 print("tout ce que je reçois :")
-print(jsonData) #tout afficher
+print(jsonData) #tout afficher --> tu peux supprimer cette partie
 print()
 
 print("auteur :")
-print(jsonData['authorSlug'] ) #afficher l'auteur uniquement
-print()
-
-print("citation :")
-print( ) #afficher la CITATION uniquement
+print(jsonData['authorSlug'] ) #afficher l'auteur uniquement --> a remplacer par la citation uniquement

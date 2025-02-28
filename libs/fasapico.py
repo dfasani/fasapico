@@ -59,6 +59,9 @@ def access_point(ssid, password = None):
   return wlan
 
 def get_url(url):
+
+    #je retire les espaces inutiles (merci Théophile)
+    url = url.strip()
    
     #retirer le commentaire pour debuger
     print("Je recupere la ressource :",url)

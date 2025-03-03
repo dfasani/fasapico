@@ -58,26 +58,26 @@ def access_point(ssid, password = None):
 
   return wlan
 
-def get_url(url):
-
-    #je retire les espaces inutiles (merci Théophile)
+def get_url(url, debug=False):
     url = url.strip()
-   
-    #retirer le commentaire pour debuger
-    print("Je recupere la ressource :",url)
+    
+    if debug:
+        print("Je recupere la ressource :", url)
     
     reponse = urequests.get(url)
-    contenuDeLaReponse = reponse.content #recupere le corps de la reponse
-    reponse.close() # <-- ULTRA IMPORTANT : FERMER LA REPONSE SINON ON SE FAIT JETER PAR SERVEUR A LA SUIVANTE !!!
+    contenuDeLaReponse = reponse.content
+    reponse.close()
     
-    #retirer le commentaire pour debuger
-    #print(corps)
+    if debug:
+        print("Réponse reçue :", contenuDeLaReponse)
+    
     return contenuDeLaReponse
 
-def get_json_from_url(url):
-    #recuperation du document
-    contenuDeLaReponse = get_url(url)
-    print("Je transforme cette chaine en objet JSON :" , contenuDeLaReponse)
+def get_json_from_url(url, debug=False):
+    contenuDeLaReponse = get_url(url, debug)
+    
+    if debug:
+        print("Je transforme cette chaine en objet JSON :", contenuDeLaReponse)
     
     jsonData = json.loads(contenuDeLaReponse)
     return jsonData

@@ -13,7 +13,7 @@ print("Connected to WiFi (" +ip+")")
 #
 urlDemandee = "https://api.quotable.io/random"
 print(urlDemandee)
-jsonData = get_json_from_url(urlDemandee)
+jsonData = get_json_from_url(urlDemandee, debug=True)
 
 #
 # 3. J'exploite le résultat

@@ -1,4 +1,3 @@
-from utime import sleep
 from grove_lcd_i2c import *
 
 #screen init

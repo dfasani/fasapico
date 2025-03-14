@@ -1,4 +1,4 @@
-from mqtt import MQTTClientSimple
+from mqtt import *
 from fasapico import *
 
 ip = connect_to_wifi(ssid="icam_iot", password = "Summ3#C@mp2022")

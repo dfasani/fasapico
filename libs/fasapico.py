@@ -16,33 +16,50 @@ def is_connected_to_wifi():
   return wlan.isconnected()
 
 # helper method to quickly get connected to wifi
-def connect_to_wifi(ssid, password, timeout_seconds=30):
-  statuses = {
-    network.STAT_IDLE: "idle",
-    network.STAT_CONNECTING: "connecting",
-    network.STAT_WRONG_PASSWORD: "wrong password",
-    network.STAT_NO_AP_FOUND: "access point not found",
-    network.STAT_CONNECT_FAIL: "connection failed",
-    network.STAT_GOT_IP: "got ip address"
-  }
+def connect_to_wifi(ssid, password, timeout_seconds=30, debug=False):
+    statuses = {
+        network.STAT_IDLE: "idle",
+        network.STAT_CONNECTING: "connecting",
+        network.STAT_WRONG_PASSWORD: "wrong password",
+        network.STAT_NO_AP_FOUND: "access point not found",
+        network.STAT_CONNECT_FAIL: "connection failed",
+        network.STAT_GOT_IP: "got ip address"
+    }
 
-  wlan = network.WLAN(network.STA_IF)
-  wlan.active(True)    
-  wlan.connect(ssid, password)
-  start = time.ticks_ms()
-  status = wlan.status()
 
-  
-  while not wlan.isconnected() and (time.ticks_ms() - start) < (timeout_seconds * 1000):
-    new_status = wlan.status()
-    if status != new_status:
-      status = new_status
-    time.sleep(0.25)
+    wlan = network.WLAN(network.STA_IF)
+    
+    # 🔄 Réinitialisation propre
+    wlan.active(False)
+    wlan.active(True)
+    wlan.disconnect()
+    time.sleep(1)
+    
+    wlan.connect(ssid, password)
+    start = time.ticks_ms()
+    status = wlan.status()
 
-  if wlan.status() != 3:
-    raise RuntimeError('network connection to ' + str(ssid) + ' failed')
+    if debug:
+        print(f"Tentative de connexion à {ssid}...")
+    
+    while not wlan.isconnected() and (time.ticks_ms() - start) < (timeout_seconds * 1000):
+        status = wlan.status()
+        if debug:
+            print(f"Statut WiFi mis à jour : {statuses.get(status, 'inconnu')}")
+        time.sleep(1)
 
-  return wlan.ifconfig()[0]
+    if wlan.status() != network.STAT_GOT_IP:
+        if debug:
+            print(f"Échec de la connexion à {ssid} : {statuses.get(wlan.status(), wlan.status())}")
+        raise RuntimeError(f"Network connection to {ssid} failed")
+
+    ifconfig_data = wlan.ifconfig()
+    if debug:
+        print(f"Configuration réseau complète : {ifconfig_data}")
+        print("Attente pour stabilisation du WiFi...")
+    
+    time.sleep(1)
+    return ifconfig_data[0]
 
 # helper method to put the pico into access point mode
 def access_point(ssid, password = None):

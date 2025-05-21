@@ -27,7 +27,7 @@ Ce projet permet de piloter un petit bateau via un Raspberry Pi Pico W en utilis
 
 ## 🔧 Fichiers
 
-- `main.py` : Code principal du serveur, des capteurs simulés et du pilote automatique.
+- `bateau_avec_pilote_auto.py` : Code principal du serveur, des capteurs simulés et du pilote automatique.
 - `README.md` : Ce fichier de documentation.
 
 ## 🧠 Pilotage automatique

@@ -1,6 +1,7 @@
 # 🚤 Serveur Autopilote pour Bateau - Raspberry Pi Pico W
 
 Ce projet permet de piloter un petit bateau via un Raspberry Pi Pico W en utilisant une interface web locale (WiFi) et un mode autopilote. Il s'appuie sur la bibliothèque `phew` pour créer un serveur HTTP minimaliste accessible en point d'accès.
+Cela permet de commander et relever des informations sur le bateau sans aucune infrastructure (pas de broker MQTT, pas d'accès à internet nécessaire)
 
 ## 🧩 Fonctionnalités
 

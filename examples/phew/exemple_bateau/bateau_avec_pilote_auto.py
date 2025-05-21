@@ -30,18 +30,15 @@ in2 = Pin(PIN_IN2, Pin.OUT)
 
 
 def set_safran(angle):
-    print(angle)
     angle = max(-90, min(90, angle))
-    print(angle)
-
-    duty = int((angle + 90) / 180 * 5000 + 5000)  # de 5000 (0.5 ms) a 10000 (2.5 ms)
-    safran_pwm.duty_u16(duty)
-    logging.info(f"[ACTION] Safran regle a {angle}°")
+    min_ns = 500_000     # 0.5 ms
+    max_ns = 2500_000    # 2.5 ms
+    pulse_width = min_ns + int((angle + 90) / 180 * (max_ns - min_ns))
+    safran_pwm.duty_ns(pulse_width)
+    logging.info(f"[ACTION] Safran regle a {angle}° avec MLI {pulse_width}")
 
 def set_moteur(vitesse):
-    print(vitesse)
     vitesse = max(-100, min(100, vitesse))
-    print(vitesse)
     sens = 1 if vitesse >= 0 else -1
     duty = int(abs(vitesse) * 65535 / 100)
     print(duty)
@@ -92,9 +89,10 @@ def execute_pilote_auto(timer):
         set_moteur(0)
         logging.info("[AUTO] Arrive a destination")
         return
-    angle = calculer_angle_vers_objectif(lat, lon, dest_lat, dest_lon)
-    set_safran(angle)
-    set_moteur(50)
+    erreur = (angle - cap_actuel + 540) % 360 - 180  # Donne un delta entre -180 et +180
+    erreur = max(-90, min(90, erreur))  # Limite pour le servo
+    set_safran(erreur)
+    set_moteur(80)
     logging.info("[AUTO] Cap sur l'Icam de Vannes")
 
 # --- Routes serveur ---
@@ -138,7 +136,11 @@ def afficher_gps(request):
 def afficher_cap(request):
     global cap_actuel
     return f"{cap_actuel}"
-    return cap_actuel
+
+@server.route("/etat")
+def get_etat(request):
+    return f"cap: {cap_actuel} , GPS: {position_gps_actuelle}, pilote auto: {pilote_auto}"
+
 
 @server.catchall()
 def erreur_404(request):

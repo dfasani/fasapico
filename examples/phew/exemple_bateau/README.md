@@ -54,4 +54,4 @@ L'autopilote :
 
 ---
 
-© Projet pédagogique ICAM – Vannes. Développé avec ❤️ par des passionnés de robotique et d'embarqué.
+© Projet pédagogique ICAM – Vannes. Développé avec ❤️ par David Fasani.

@@ -15,8 +15,6 @@ logging.enable_logging_types(logging.LOG_DEBUG)
 # --- Identifiants WiFi ---
 WIFI_SSID = "icam_iot"
 WIFI_PWD = "Summ3#C@mp2022"
-WIFI_SSID = "f"
-WIFI_PWD = "davidfasanisecret"
 
 
 # --- Variables globales ---

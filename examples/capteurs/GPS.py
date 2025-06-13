@@ -2,6 +2,9 @@ from machine import *
 from time import *
 from micropyGPS import *
 
+#micropyGPS disponible ici : https://github.com/inmcm/micropyGPS/blob/master/micropyGPS.py
+#pour l'utiliser, il faut le copier dans le dossier lib de votre pico
+
 gpsModule = UART(0, baudrate=9600, tx=Pin(0), rx=Pin(1))
 gpsDecoder = MicropyGPS()
 

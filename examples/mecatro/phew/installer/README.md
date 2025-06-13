@@ -4,13 +4,12 @@ Ce script permet de connecter automatiquement un microcontrôleur équipé de Mi
 
 ## 🔧 Matériel compatible
 
-- Raspberry Pi Pico W
-- Tout microcontrôleur compatible MicroPython et disposant du WiFi
+- Tout microcontrôleur compatible MicroPython et disposant du WiFi (eg. Raspberry Pi Pico W)
 
 ## 📦 Dépendances
 
 - MicroPython récent avec support du module `mip`
-- La bibliothèque  [fasapico.py](https://github.com/dfasani/fasapico/blob/main/libs/fasapico.py) contenant la fonction `connect_to_wifi()` 
+
 
 ## 📝 Script Python
 

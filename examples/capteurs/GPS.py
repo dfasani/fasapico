@@ -9,7 +9,7 @@ from micropyGPS import *
 gpsModule = UART(0, baudrate=9600, tx=Pin(0), rx=Pin(1))
 
 #si votre GPS est branché sur les pin 4 et 5
-#gpsModule = UART(0, baudrate=9600, tx=Pin(4), rx=Pin(5))
+#gpsModule = UART(1, baudrate=9600, tx=Pin(4), rx=Pin(5))
 
 gpsDecoder = MicropyGPS()
 

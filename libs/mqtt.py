@@ -1,5 +1,3 @@
-
-
 import json
 import sys
 import utime
@@ -50,9 +48,20 @@ class MQTTClientSimple:
         self.lw_qos = 0
         self.lw_retain = False
 
+    def _to_bytes(self, s):
+        # Accept either bytes or str. If str, encode as utf-8.
+        if isinstance(s, bytes):
+            return s
+        if isinstance(s, str):
+            return s.encode("utf-8")
+        # Fallback: convert to str then encode
+        return str(s).encode("utf-8")
+
     def _send_str(self, s):
-        self.sock.write(struct.pack("!H", len(s)))
-        self.sock.write(s)
+        b = self._to_bytes(s)
+        # send 2-byte length followed by bytes
+        self.sock.write(struct.pack("!H", len(b)))
+        self.sock.write(b)
 
     def _recv_len(self):
         n = 0
@@ -86,17 +95,23 @@ class MQTTClientSimple:
         premsg = bytearray(b"\x10\0\0\0\0\0")
         msg = bytearray(b"\x04MQTT\x04\x02\0\0")
 
-        sz = 10 + 2 + len(self.client_id)
+        # Use byte lengths for utf-8 correctness
+        client_id_b = self._to_bytes(self.client_id)
+        sz = 10 + 2 + len(client_id_b)
         msg[6] = clean_session << 1
         if self.user is not None:
-            sz += 2 + len(self.user) + 2 + len(self.pswd)
+            user_b = self._to_bytes(self.user)
+            pswd_b = self._to_bytes(self.pswd)
+            sz += 2 + len(user_b) + 2 + len(pswd_b)
             msg[6] |= 0xC0
         if self.keepalive:
             assert self.keepalive < 65536
             msg[7] |= self.keepalive >> 8
             msg[8] |= self.keepalive & 0x00FF
         if self.lw_topic:
-            sz += 2 + len(self.lw_topic) + 2 + len(self.lw_msg)
+            lw_topic_b = self._to_bytes(self.lw_topic)
+            lw_msg_b = self._to_bytes(self.lw_msg)
+            sz += 2 + len(lw_topic_b) + 2 + len(lw_msg_b)
             msg[6] |= 0x4 | (self.lw_qos & 0x1) << 3 | (self.lw_qos & 0x2) << 3
             msg[6] |= self.lw_retain << 5
 
@@ -110,13 +125,14 @@ class MQTTClientSimple:
         self.sock.write(premsg, i + 2)
         self.sock.write(msg)
         # print(hex(len(msg)), hexlify(msg, ":"))
-        self._send_str(self.client_id)
+        # send client id as bytes
+        self._send_str(client_id_b)
         if self.lw_topic:
-            self._send_str(self.lw_topic)
-            self._send_str(self.lw_msg)
+            self._send_str(lw_topic_b)
+            self._send_str(lw_msg_b)
         if self.user is not None:
-            self._send_str(self.user)
-            self._send_str(self.pswd)
+            self._send_str(user_b)
+            self._send_str(pswd_b)
         resp = self.sock.read(4)
         assert resp[0] == 0x20 and resp[1] == 0x02
         if resp[3] != 0:
@@ -133,7 +149,10 @@ class MQTTClientSimple:
     def publish(self, topic, msg , qos=0 , retain=False):
         pkt = bytearray(b"\x30\0\0\0")
         pkt[0] |= qos << 1 | retain
-        sz = 2 + len(topic) + len(msg)
+        # ensure we use byte lengths for topic and msg
+        topic_b = self._to_bytes(topic)
+        msg_b = self._to_bytes(msg)
+        sz = 2 + len(topic_b) + len(msg_b)
         if qos > 0:
             sz += 2
         assert sz < 2097152
@@ -145,13 +164,13 @@ class MQTTClientSimple:
         pkt[i] = sz
         # print(hex(len(pkt)), hexlify(pkt, ":"))
         self.sock.write(pkt, i + 1)
-        self._send_str(topic)
+        self._send_str(topic_b)
         if qos > 0:
             self.pid += 1
             pid = self.pid
             struct.pack_into("!H", pkt, 0, pid)
             self.sock.write(pkt, 2)
-        self.sock.write(msg)
+        self.sock.write(msg_b)
         if qos == 1:
             while 1:
                 op = self.wait_msg()
@@ -167,12 +186,15 @@ class MQTTClientSimple:
 
     def subscribe(self, topic, qos=0):
         assert self.cb is not None, "Subscribe callback is not set"
+        topic_b = self._to_bytes(topic)
         pkt = bytearray(b"\x82\0\0\0")
         self.pid += 1
-        struct.pack_into("!BH", pkt, 1, 2 + 2 + len(topic) + 1, self.pid)
+        # length: 2 (packet id) + 2 + len(topic) + 1 (qos)
+        total_len = 2 + 2 + len(topic_b) + 1
+        struct.pack_into("!BH", pkt, 1, total_len, self.pid)
         # print(hex(len(pkt)), hexlify(pkt, ":"))
         self.sock.write(pkt)
-        self._send_str(topic)
+        self._send_str(topic_b)
         self.sock.write(qos.to_bytes(1, "little"))
         while 1:
             op = self.wait_msg()
@@ -205,14 +227,24 @@ class MQTTClientSimple:
         sz = self._recv_len()
         topic_len = self.sock.read(2)
         topic_len = (topic_len[0] << 8) | topic_len[1]
-        topic = self.sock.read(topic_len)
+        topic_b = self.sock.read(topic_len)
         sz -= topic_len + 2
         if op & 6:
             pid = self.sock.read(2)
             pid = pid[0] << 8 | pid[1]
             sz -= 2
         msg = self.sock.read(sz)
-        self.cb(topic, msg)
+        # decode topic and message to utf-8 strings before calling callback
+        try:
+            topic = topic_b.decode("utf-8")
+        except Exception:
+            topic = topic_b
+        try:
+            msg_decoded = msg.decode("utf-8")
+        except Exception:
+            msg_decoded = msg
+        # call the callback with decoded (or raw bytes if decode fails)
+        self.cb(topic, msg_decoded)
         if op & 6 == 2:
             pkt = bytearray(b"\x40\x02\0\0")
             struct.pack_into("!H", pkt, 2, pid)

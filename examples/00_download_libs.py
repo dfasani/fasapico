@@ -29,6 +29,9 @@ if GITHUB_TOKEN:
 # Retry configuration
 MAX_RETRIES = 4
 BACKOFF_FACTOR = 1.0  # seconds, multiplied by 2**attempt
+# If True, the downloader will compare remote content with local file and skip
+# writing if they are identical (saves flash writes and time).
+SKIP_IF_IDENTICAL = True
 
 def request_with_retries(url, headers=None, max_retries=MAX_RETRIES, backoff_factor=BACKOFF_FACTOR):
     """Perform a GET with simple exponential backoff retry for transient errors.
@@ -128,12 +131,37 @@ def download_file(url, dest_path):
         return False
     data = r.content
     r.close()
-    # écrire en binaire
+
+    # si le fichier local existe et que son contenu est identique, on saute l'écriture
+    if SKIP_IF_IDENTICAL:
+        try:
+            with open(dest_path, "rb") as f:
+                existing = f.read()
+        except Exception:
+            existing = None
+        if existing is not None and existing == data:
+            print("Fichier existant identique, saut:", dest_path)
+            return True
+
+    # écrire en binaire de façon plus sûre: écrire dans un fichier temporaire puis renommer
+    tmp_path = dest_path + ".tmp"
     try:
-        with open(dest_path, "wb") as f:
+        with open(tmp_path, "wb") as f:
             f.write(data)
+        # remplacer l'ancien fichier de façon atomique si possible
+        try:
+            # supprimer l'ancien fichier si présent (rename may overwrite on some ports)
+            os.remove(dest_path)
+        except Exception:
+            pass
+        os.rename(tmp_path, dest_path)
     except Exception as e:
         print("Erreur écriture fichier:", e)
+        # tenter de supprimer le tmp en échec
+        try:
+            os.remove(tmp_path)
+        except Exception:
+            pass
         return False
     return True
 

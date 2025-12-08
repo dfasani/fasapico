@@ -1,26 +1,14 @@
-import network
-import time
+from fasapico import *
 
-#change si necessaire
-WIFI_SSID = "icam_iot"
-WIFI_PASSWORD = "Summ3#C@mp2022"
+# Connect to WiFi using credentials from secrets.py or default
+ip = connect_to_wifi()
 
-wlan = network.WLAN(network.STA_IF) #carte reseau en mode STATION
-wlan.connect(WIFI_SSID, WIFI_PASSWORD)
+print('Connected!')
+print('IP = ' + ip)
 
-# Wait for connect or fail
-max_wait = 10
-while max_wait > 0:
-    if wlan.status() < 0 or wlan.status() >= 3:
-        break
-    max_wait -= 1
-    print('waiting for connection...')
-    time.sleep(1)
-
-# Handle connection error
-if wlan.status() != 3:
-    raise RuntimeError('network connection failed')
+# Robustness check loop example (though connect_to_wifi already handles retries)
+wlan = network.WLAN(network.STA_IF)
+if wlan.isconnected():
+    print("Connection verified.")
 else:
-    print('connected')
-    status = wlan.ifconfig()
-    print( 'ip = ' + status[0] )
+    print("Connection lost.")

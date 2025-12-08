@@ -1,4 +1,4 @@
-from grove_lcd_i2c import *
+from fasapico import *
 
 #screen init
 lcd = Grove_LCD_I2C()

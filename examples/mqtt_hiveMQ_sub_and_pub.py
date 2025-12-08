@@ -1,8 +1,8 @@
-from mqtt import MQTTClientSimple
 from fasapico import *
 from machine import *
+import secrets
 
-ip = connect_to_wifi(ssid="icam_iot", password = "Summ3#C@mp2022")
+ip = connect_to_wifi()
 
 def on_message_callback(topic,msg):
     topic = topic.decode('utf-8')
@@ -10,7 +10,7 @@ def on_message_callback(topic,msg):
     print("recu >>",topic,msg)
 
 #merci de remplacer "DavidFasani" , sinon on va se faire jeter par le serveur
-clientMQTT = MQTTClientSimple(client_id="DavidFasani", server="broker.hivemq.com")
+clientMQTT = MQTTClientSimple(client_id="DavidFasani", server="mqtt.dev.icam.school", ssl=True)
 clientMQTT.set_callback(on_message_callback)  #que doit-on faire à reception d'un message ? Appeler la fonction on_message_callback()
 clientMQTT.connect()
 

@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from bmm150 import *
+from fasapico import *
 from time import *
 
 #initialisation du compas numérique

@@ -2,14 +2,13 @@
 # Connection au reseau WiFi
 #
 
-import network
-#change si necessaire
-WIFI_SSID = "icam_iot"
-WIFI_PASSWORD = "Summ3#C@mp2022"
+from fasapico import *
 
-wlan = network.WLAN(network.STA_IF) #carte reseau en mode STATION
-wlan.active(True)
-wlan.connect(WIFI_SSID, WIFI_PASSWORD)
+#
+# Connection au reseau WiFi
+#
+
+ip = connect_to_wifi()
 
 
 #

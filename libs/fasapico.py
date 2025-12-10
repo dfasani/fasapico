@@ -196,8 +196,9 @@ def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback
             client.set_callback(callback)
             client.connect()
             
-            info(f"Abonnement à {topic_cmd}")
-            client.subscribe(topic_cmd)
+            if topic_cmd:
+                info(f"Abonnement à {topic_cmd}")
+                client.subscribe(topic_cmd)
             
             info("MQTT Connecté & Abonné !")
             return client

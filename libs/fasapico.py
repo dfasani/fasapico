@@ -2052,3 +2052,54 @@ def debug(*items):
 def exception(*items):
   if _logging_types & LOG_EXCEPTION:
     log("exception", " ".join(map(str, items)))
+
+
+# ==========================================
+# MqttHandler Class
+# ==========================================
+class MqttHandler:
+    def __init__(self, broker, port, client_id, topic_cmd=None, callback=None):
+        self.broker = broker
+        self.port = port
+        self.client_id = client_id
+        self.topic_cmd = topic_cmd
+        self.callback = callback
+        self.client = None
+
+    def check_connection(self, timer=None):
+        """
+        Vérifie et rétablit la connexion MQTT si nécessaire.
+        Peut être utilisé comme callback de Timer.
+        """
+        self.client = manage_mqtt_connection(
+            client=self.client,
+            server_broker=self.broker,
+            client_id=self.client_id,
+            topic_cmd=self.topic_cmd,
+            callback=self.callback,
+            port=self.port
+        )
+        return self.client
+    
+    def publish(self, topic, message):
+        """
+        Publie un message si connecté.
+        """
+        if self.client:
+            try:
+                self.client.publish(topic, str(message))
+            except Exception as e:
+                error(f"Erreur publish {topic}: {e}")
+        else:
+            pass
+
+    def check_msg(self):
+        """
+        Vérifie les messages entrants (doit être appelé dans la boucle principale).
+        """
+        if self.client:
+             try:
+                 self.client.check_msg()
+             except Exception as e:
+                 error(f"Erreur check_msg: {e}") 
+

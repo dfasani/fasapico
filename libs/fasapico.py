@@ -819,7 +819,7 @@ class bmm150(object):
     self.address = 0x13
 
   def read_reg(self, reg, len):
-    return self.i2cbus.readfrom_mem(self.address, reg, len)
+    return list(self.i2cbus.readfrom_mem(self.address, reg, len))
 
   def write_reg(self, reg, data):
     if isinstance(data, int):

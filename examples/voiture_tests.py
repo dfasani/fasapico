@@ -20,21 +20,7 @@ print("Stop")
 ma_voiture.stop()
 sleep(2)
 
-print("Differentiel droit")
-ma_voiture.differentiel(traingauche=100, traindroit=90)
-sleep(10)
 
-print("Stop")
-ma_voiture.stop()
-sleep(2)
-
-print("Differentiel gauche")
-ma_voiture.differentiel(traingauche=70, traindroit=100)
-sleep(10)
-
-print("rotation gauche")
-ma_voiture.differentiel(traingauche=-100, traindroit=100)
-sleep(10)
 
 print("Stop")
 ma_voiture.stop()

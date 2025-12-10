@@ -806,15 +806,13 @@ class bmm150(object):
   __txbuf          = [0]          # i2c send buffer
   __threshold_mode = 2
   def __init__(self , sdaPin , sclPin):
-    self.i2cbus = SoftI2C(scl=Pin(sclPin), sda=Pin(sdaPin), freq=100000)
-    
     timeout = utime.time() + 10 # 10 sec
-    while True:  
+    while True:
+        self.i2cbus = SoftI2C(scl=Pin(sclPin), sda=Pin(sdaPin), freq=100000)
         if len(self.i2cbus.scan()) > 0 or utime.time() > timeout:
             break
         
         utime.sleep_ms(100)
-
 
     self.address = 0x13
 

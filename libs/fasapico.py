@@ -432,34 +432,7 @@ class MqttHandler:
 
 
     
-    def differentiel(self, traingauche, traindroit):
-        
-        """
-        Permet de régler la vitesse des moteurs gauche (A et C) et droit (B et D) pour un contrôle différentiel.
-        Les vitesses doivent être comprises entre -100 et 100.
 
-        - traingauche : vitesse des moteurs A et C (-100 à 100)
-        - traindroit  : vitesse des moteurs B et D (-100 à 100)
-        """
-
-        # Vérifier si les vitesses sont bien dans la plage acceptable
-        if not (-100 <= traingauche <= 100):
-            self.moteur_c.avant()         
-        else:
-            # Les moteurs A et C vont en arrière
-            self.moteur_a.arriere()
-            self.moteur_c.arriere()
-
-
-        # Gestion des moteurs droit (B et D)
-        if traindroit > 0:
-            # Les moteurs B et D vont en avant
-            self.moteur_b.avant()
-            self.moteur_d.avant()
-        else:
-            # Les moteurs B et D vont en arrière
-            self.moteur_b.arriere()
-            self.moteur_d.arriere()
 
 
 # ==========================================

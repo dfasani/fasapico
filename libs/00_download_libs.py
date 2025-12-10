@@ -1,6 +1,6 @@
 # download_libs.py
 # MicroPython pour Raspberry Pi Pico W/W2
-# Télécharge tous les fichiers du répertoire GitHub "libs" et les place dans /lib du Pico W/W2.
+# Télécharge le package fasapico complet et les libs auxiliaires depuis GitHub et les place dans /lib du Pico W/W2.
 
 import network
 import time
@@ -225,9 +225,17 @@ def main():
         raise SystemExit("Remplir SSID et PASSWORD dans secrets.py ou le script avant exécution.")
     
     connect_wifi(ssid, password)
-    # point de départ: récupérer tout le contenu de libs et le copier dans /lib
+    
+    # 1. Récupérer le package fasapico complet -> /lib/fasapico/
+    print("\n=== Téléchargement du package fasapico ===")
+    FASAPICO_API = "https://api.github.com/repos/dfasani/fasapico/contents/fasapico"
+    fetch_dir(FASAPICO_API, "/lib/fasapico")
+    
+    # 2. Récupérer les libs auxiliaires (ble, huskylens, etc.) -> /lib/
+    print("\n=== Téléchargement des libs auxiliaires ===")
     fetch_dir(GITHUB_API, "/lib")
-    print("Terminé.")
+    
+    print("\n=== Terminé. ===")
     print("N'oubliez pas de copier secrets.py sur le Pico si ce n'est pas déjà fait!")
 
 if __name__ == "__main__":

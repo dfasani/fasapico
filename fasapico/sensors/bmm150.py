@@ -719,6 +719,8 @@ class bmm150_I2C(bmm150):
   ADDRESS_3       = 0x13   # (CSB:1 SDO:1) default i2c address
   
   def __init__(self, addr=ADDRESS_3, sdaPin=0, sclPin=1, retries=5, delay=1):
+        from machine import Pin, SoftI2C
+        
         self.__addr = addr
         self.sdaPin = sdaPin
         self.sclPin = sclPin
@@ -728,10 +730,18 @@ class bmm150_I2C(bmm150):
         # Tentatives de connexion avec des retries
         for attempt in range(self.retries):
             try:
-                # Appel du constructeur de la classe mère (initialisation I2C)
-                super(bmm150_I2C, self).__init__(self.sdaPin, self.sclPin)
+                # Initialiser le bus I2C
+                self.i2cbus = SoftI2C(scl=Pin(self.sclPin), sda=Pin(self.sdaPin), freq=100000)
+                
+                # Vérifier si le périphérique est présent
+                devices = self.i2cbus.scan()
+                if self.__addr not in devices:
+                    raise OSError(f"BMM150 not found at address 0x{self.__addr:02X}")
                 
                 # Initialisation des paramètres
+                self.set_power_bit(bmm150.ENABLE_POWER)
+                utime.sleep_ms(100)  # Attendre la stabilisation
+                
                 self.set_operation_mode(bmm150.POWERMODE_NORMAL)
                 self.set_preset_mode(bmm150.PRESETMODE_HIGHACCURACY)
                 self.set_rate(bmm150.RATE_10HZ)

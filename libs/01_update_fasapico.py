@@ -1,6 +1,6 @@
 # update_fasapico.py
 # MicroPython pour Raspberry Pi Pico W/W2
-# Télécharge uniquement fasapico.py et le place dans /lib du Pico W/W2.
+# Télécharge le package fasapico complet depuis GitHub et le place dans /lib du Pico W/W2.
 
 import network
 import time
@@ -11,7 +11,7 @@ try:
 except Exception as e:
     raise ImportError("Le module urequests est requis. Installer une build MicroPython avec urequests.") from e
 
-GITHUB_API = "https://api.github.com/repos/dfasani/fasapico/contents/libs"
+GITHUB_API = "https://api.github.com/repos/dfasani/fasapico/contents/fasapico"
 SSID = "icam_iot"
 PASSWORD = "Summ3#C@mp2022"
 # Optional: set a GitHub Personal Access Token here to avoid API rate limits (if empty, we'll use unauthenticated requests)
@@ -165,12 +165,17 @@ def download_file(url, dest_path):
         return False
     return True
 
-def fetch_file_only(api_url, target_dir, target_file="fasapico.py"):
-    # target_dir est le chemin local sous /lib (ex: "/lib" ou "/lib/sub")
+def download_directory_recursive(api_url, local_dir):
+    """Télécharge récursivement un répertoire depuis l'API GitHub.
+    
+    Args:
+        api_url: URL de l'API GitHub pour le contenu du répertoire
+        local_dir: Chemin local où sauvegarder les fichiers
+    """
     print("Listing:", api_url)
     r = request_with_retries(api_url, headers=HEADERS)
     if not r:
-        return
+        return False
     if r.status_code != 200:
         try:
             info = r.json()
@@ -183,35 +188,39 @@ def fetch_file_only(api_url, target_dir, target_file="fasapico.py"):
             if r.status_code == 403:
                 print("Si c'est une limitation d'API, créez un Personal Access Token et assignez la variable GITHUB_TOKEN dans ce script.")
         r.close()
-        return
+        return False
     items = r.json()
     r.close()
-    # s'assurer que le répertoire local existe
-    makedirs(target_dir)
     
-    found = False
+    # s'assurer que le répertoire local existe
+    makedirs(local_dir)
+    
+    success = True
     for item in items:
         itype = item.get("type")
         name = item.get("name")
         if not name:
             continue
         
-        # ON NE PREND QUE fasapico.py
-        if name == target_file:
-            found = True
-            if itype == "file":
-                download_url = item.get("download_url")
-                if not download_url:
-                    print("Pas d'URL de téléchargement pour", name)
-                    continue
-                dest = target_dir.rstrip("/") + "/" + name
-                download_file(download_url, dest)
-            else:
-                print(f"Attention: {name} n'est pas un fichier (type: {itype})")
-            break # On a trouvé on peut sortir
-
-    if not found:
-        print(f"Fichier {target_file} non trouvé dans le répertoire distant.")
+        if itype == "file":
+            download_url = item.get("download_url")
+            if not download_url:
+                print("Pas d'URL de téléchargement pour", name)
+                continue
+            dest = local_dir.rstrip("/") + "/" + name
+            if not download_file(download_url, dest):
+                success = False
+        elif itype == "dir":
+            # Récursion dans le sous-répertoire
+            sub_api_url = item.get("url")
+            if not sub_api_url:
+                print("Pas d'URL API pour le sous-répertoire", name)
+                continue
+            sub_local_dir = local_dir.rstrip("/") + "/" + name
+            if not download_directory_recursive(sub_api_url, sub_local_dir):
+                success = False
+    
+    return success
 
 def download_single_file_from_repo(repo_path, dest_path):
     print(f"Récupération des infos pour {repo_path}...")
@@ -258,14 +267,16 @@ def main():
     
     connect_wifi(ssid, password)
     
-    # 1. Récupérer libs/fasapico.py -> /lib/fasapico.py
-    fetch_file_only(GITHUB_API, "/lib", "fasapico.py")
+    # 1. Télécharger le package fasapico complet -> /lib/fasapico/
+    print("\n=== Téléchargement du package fasapico ===")
+    download_directory_recursive(GITHUB_API, "/lib/fasapico")
     
     # 2. Récupérer secrets.py -> /secrets.py
     # On suppose que secrets.py est à la racine du repo
+    print("\n=== Téléchargement de secrets.py ===")
     download_single_file_from_repo("secrets.py", "/secrets.py")
 
-    print("Mise à jour terminée.")
+    print("\n=== Mise à jour terminée. ===")
 
 if __name__ == "__main__":
     main()

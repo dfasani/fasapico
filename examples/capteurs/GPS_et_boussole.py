@@ -1,7 +1,7 @@
 from machine import *
 from time import *
 from micropyGPS import *
-from libs.fasapico import *
+from fasapico import *
 
 #micropyGPS disponible ici : https://github.com/inmcm/micropyGPS/blob/master/micropyGPS.py
 

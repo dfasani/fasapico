@@ -349,6 +349,27 @@ class Voiture:
 
 
 # ==========================================
+# Stepper Class
+# ==========================================
+
+class Stepper:
+    def __init__(self, pin1=10, pin2=11, pin3=12, pin4=13):
+        self.pins = [Pin(pin1, Pin.OUT), Pin(pin2, Pin.OUT), Pin(pin3, Pin.OUT), Pin(pin4, Pin.OUT)]
+
+    def move(self, nbPas):
+        if nbPas > 0:
+            steps_sequence = [[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
+        else:
+            steps_sequence = [[0,0,0,1], [0,0,1,0], [0,1,0,0], [1,0,0,0]]
+            
+        for _ in range(abs(nbPas)):
+            for step in steps_sequence:
+                for i in range(4):
+                    self.pins[i].value(step[i])
+                time.sleep_ms(5)
+
+
+# ==========================================
 # MQTT Classes
 # ==========================================
 
@@ -794,6 +815,20 @@ class bmm150(object):
             break
         
         utime.sleep_ms(100)
+
+    self.address = 0x13
+
+  def read_reg(self, reg, len):
+    return self.i2cbus.readfrom_mem(self.address, reg, len)
+
+  def write_reg(self, reg, data):
+    if isinstance(data, int):
+        buf = bytearray([data])
+    elif isinstance(data, list):
+        buf = bytearray(data)
+    else:
+        buf = data
+    self.i2cbus.writeto_mem(self.address, reg, buf)
 
 
   def sensor_init(self):

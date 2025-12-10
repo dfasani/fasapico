@@ -437,7 +437,7 @@ class bmm150(object):
     self.write_reg(self.REG_AXES_ENABLE, self.__txbuf)
 
 
-class bmm150_I2C(bmm150): 
+class Boussole(bmm150): 
   '''!
     @brief An example of an i2c interface module
   '''
@@ -456,7 +456,7 @@ class bmm150_I2C(bmm150):
     for attempt in range(self.retries):
       try:
         # Appel du constructeur de la classe mère
-        super(bmm150_I2C, self).__init__(self.sdaPin, self.sclPin)
+        super(Boussole, self).__init__(self.sdaPin, self.sclPin)
         
         # Initialisation avec sensor_init() pour lire les données de calibration
         if self.sensor_init() == 0:

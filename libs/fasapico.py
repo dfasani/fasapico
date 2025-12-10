@@ -11,6 +11,7 @@ import os
 import gc
 from ubinascii import hexlify
 from machine import I2C, Pin, SoftI2C, PWM, ADC, UART, Timer
+import machine
 
 # scale a value x from one range [in_min, in_max] to a new range [out_min, out_max]
 def scale(x, in_min, in_max, out_min, out_max):
@@ -118,6 +119,95 @@ def get_json_from_url(url, debug=False):
     
     jsonData = json.loads(contenuDeLaReponse)
     return jsonData
+
+def decode_bytes(data):
+    """
+    Décode les bytes en string utf-8 de manière sûre.
+    Retourne la donnée brute ou string.
+    """
+    if isinstance(data, bytes):
+        try:
+            return data.decode("utf-8")
+        except:
+            return data
+    return data
+
+def check_internet_connection(dns_server="8.8.8.8", port=53):
+    """
+    Vérifie l'accès internet en tentant une connexion DNS simple.
+    """
+    try:
+        addr = socket.getaddrinfo(dns_server, port)[0][-1]
+        s = socket.socket()
+        s.settimeout(3)
+        s.connect(addr)
+        s.close()
+        return True
+    except:
+        return False
+
+def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback, port=1883):
+    """
+    Gère la connexion WiFi et MQTT.
+    Retourne l'objet client MQTT (connecté ou None si échec).
+    
+    - client: instance MQTTClient actuelle (peut être None)
+    - server_broker: adresse du broker
+    - client_id: ID du client MQTT
+    - topic_cmd: Topic principal pour l'abonnement
+    - callback: fonction de rappel pour les messages reçus
+    - port: Port MQTT (default 1883)
+    """
+    # 1. Check WiFi
+    if not is_connected_to_wifi():
+        warn("WiFi perdu. Tentative de reconnexion auto via secrets...")
+        try:
+            connect_to_wifi() # Utilise secrets.py
+        except Exception as e:
+            error(f"Echec reconnexion WiFi: {e}")
+            return None
+
+    # 1c. Check Internet (Optionnel mais recommandé)
+    if not check_internet_connection():
+        error("Pas d'accès internet (Ping fail).")
+        return None
+
+    # 2. Check MQTT existant
+    if client:
+        try:
+            client.ping()
+            return client # Tout va bien
+        except:
+            error("Lien MQTT mort.")
+            client = None # On force la reconnexion
+
+    # 3. (Re)Connect MQTT
+    if client is None:
+        try:
+            info(f"Connexion au broker {server_broker}:{port}...")
+            # Petit délai stabilisateur
+            time.sleep(1)
+            
+            client = MQTTClientSimple(
+                client_id=client_id,
+                server=server_broker,
+                port=port
+            )
+            client.set_callback(callback)
+            client.connect()
+            
+            info(f"Abonnement à {topic_cmd}")
+            client.subscribe(topic_cmd)
+            
+            info("MQTT Connecté & Abonné !")
+            return client
+            
+        except Exception as e:
+             error(f"Echec Connexion MQTT: {e}")
+             return None
+
+    return client
+
 
 class Moteur:
     def __init__(self, broche_in1, broche_in2, broche_pwm, vitesse=0):
@@ -288,17 +378,58 @@ class Voiture:
         self.moteur_c.stop()
         self.moteur_d.stop()
         
-        
-    def definir_vitesse(self, gaz):
-        """
-        Définit la vitesse (0 à 65535).
-        Si la vitesse est un float, elle est convertie en int.
-        Lève une exception si la valeur est hors limites.
-        """
-        self.moteur_a.definir_vitesse(gaz)
-        self.moteur_b.definir_vitesse(gaz)
-        self.moteur_c.definir_vitesse(gaz)
         self.moteur_d.definir_vitesse(gaz)
+
+    
+# ==========================================
+# MqttHandler Class
+# ==========================================
+class MqttHandler:
+    def __init__(self, broker, port, client_id, topic_cmd=None, callback=None):
+        self.broker = broker
+        self.port = port
+        self.client_id = client_id
+        self.topic_cmd = topic_cmd
+        self.callback = callback
+        self.client = None
+
+    def check_connection(self, timer=None):
+        """
+        Vérifie et rétablit la connexion MQTT si nécessaire.
+        Peut être utilisé comme callback de Timer.
+        """
+        self.client = manage_mqtt_connection(
+            client=self.client,
+            server_broker=self.broker,
+            client_id=self.client_id,
+            topic_cmd=self.topic_cmd,
+            callback=self.callback,
+            port=self.port
+        )
+        return self.client
+    
+    def publish(self, topic, message):
+        """
+        Publie un message si connecté.
+        """
+        if self.client:
+            try:
+                self.client.publish(topic, str(message))
+            except Exception as e:
+                error(f"Erreur publish {topic}: {e}")
+        else:
+            pass
+
+    def check_msg(self):
+        """
+        Vérifie les messages entrants (doit être appelé dans la boucle principale).
+        """
+        if self.client:
+             try:
+                 self.client.check_msg()
+             except Exception as e:
+                 error(f"Erreur check_msg: {e}") 
+
 
     
     def differentiel(self, traingauche, traindroit):
@@ -313,23 +444,6 @@ class Voiture:
 
         # Vérifier si les vitesses sont bien dans la plage acceptable
         if not (-100 <= traingauche <= 100):
-            raise ValueError("La vitesse de traingauche doit être comprise entre -100 et 100.")
-        if not (-100 <= traindroit <= 100):
-            raise ValueError("La vitesse de traindroit doit être comprise entre -100 et 100.")
-
-        # Convertir les vitesses de -100 à 100 vers la plage 0 à 65535 pour le PWM
-        vitesse_gauche = scale_to_int(abs(traingauche), 0, 100, 0, 65535)
-        vitesse_droite = scale_to_int(abs(traindroit), 0, 100, 0, 65535)
-        
-        self.moteur_a.definir_vitesse(vitesse_gauche)
-        self.moteur_c.definir_vitesse(vitesse_gauche)
-        self.moteur_b.definir_vitesse(vitesse_droite)
-        self.moteur_d.definir_vitesse(vitesse_droite)
-        
-        # Gestion des moteurs gauche (A et C)
-        if traingauche > 0:
-            # Les moteurs A et C vont en avant
-            self.moteur_a.avant()
             self.moteur_c.avant()         
         else:
             # Les moteurs A et C vont en arrière

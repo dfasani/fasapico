@@ -1,6 +1,7 @@
 # update_fasapico.py
 # MicroPython pour Raspberry Pi Pico W/W2
 # Télécharge le package fasapico complet depuis GitHub et le place dans /lib du Pico W/W2.
+# Ce script unifié remplace 00_download_libs.py et 01_update_fasapico.py
 
 import network
 import time
@@ -11,14 +12,18 @@ try:
 except Exception as e:
     raise ImportError("Le module urequests est requis. Installer une build MicroPython avec urequests.") from e
 
+# GitHub API URL for the fasapico package
 GITHUB_API = "https://api.github.com/repos/dfasani/fasapico/contents/fasapico"
+
+# Default WiFi credentials (override with secrets.py)
 SSID = "icam_iot"
 PASSWORD = "Summ3#C@mp2022"
-# Optional: set a GitHub Personal Access Token here to avoid API rate limits (if empty, we'll use unauthenticated requests)
-# Create a token at https://github.com/settings/tokens with at least `repo` or `public_repo` scope for public repos.
+
+# Optional: set a GitHub Personal Access Token here to avoid API rate limits
+# Create a token at https://github.com/settings/tokens with at least `public_repo` scope
 GITHUB_TOKEN = ""  # e.g. "ghp_xxx..." or leave empty for unauthenticated
 
-# Headers to send to the GitHub API. User-Agent is recommended by GitHub and helps avoid some rejections.
+# Headers for GitHub API requests
 HEADERS = {
     "User-Agent": "MicroPython-Downloader",
     "Accept": "application/vnd.github.v3+json",
@@ -29,9 +34,10 @@ if GITHUB_TOKEN:
 # Retry configuration
 MAX_RETRIES = 4
 BACKOFF_FACTOR = 1.0  # seconds, multiplied by 2**attempt
-# If True, the downloader will compare remote content with local file and skip
-# writing if they are identical (saves flash writes and time).
+
+# If True, skip writing if local file is identical to remote (saves flash writes)
 SKIP_IF_IDENTICAL = True
+
 
 def request_with_retries(url, headers=None, max_retries=MAX_RETRIES, backoff_factor=BACKOFF_FACTOR):
     """Perform a GET with simple exponential backoff retry for transient errors.
@@ -53,7 +59,7 @@ def request_with_retries(url, headers=None, max_retries=MAX_RETRIES, backoff_fac
                 print("Requête échouée pour", url, ":", e)
                 return None
             backoff = backoff_factor * (2 ** (attempt - 1))
-            print("Erreur réseau pour", url, ", tentative", attempt, "/", max_retries, ", nouvelle tentative dans", backoff, "s")
+            print("Erreur réseau pour", url, ", tentative", attempt, "/", max_retries, ", retry dans", backoff, "s")
             time.sleep(backoff)
             continue
 
@@ -62,7 +68,7 @@ def request_with_retries(url, headers=None, max_retries=MAX_RETRIES, backoff_fac
         if code == 200:
             return r
 
-        # For 403, don't retry automatically: print message and return the response for caller to inspect
+        # For 403, don't retry automatically
         if code == 403:
             return r
 
@@ -81,14 +87,16 @@ def request_with_retries(url, headers=None, max_retries=MAX_RETRIES, backoff_fac
                     print("Message API:", msg)
                 return None
             backoff = backoff_factor * (2 ** (attempt - 1))
-            print("API temporairement indisponible (code", code, ") pour", url, ", tentative", attempt, "/", max_retries, ", nouvelle tentative dans", backoff, "s")
+            print("API temporairement indisponible (code", code, "), retry dans", backoff, "s")
             time.sleep(backoff)
             continue
 
         # Other non-200 responses — return the response for the caller to handle
         return r
 
+
 def connect_wifi(ssid, password, timeout=20):
+    """Connect to WiFi network."""
     wlan = network.WLAN(network.STA_IF)
     if not wlan.active():
         wlan.active(True)
@@ -102,8 +110,9 @@ def connect_wifi(ssid, password, timeout=20):
             time.sleep(0.5)
     print("Connecté, IP =", wlan.ifconfig()[0])
 
+
 def makedirs(path):
-    # crée récursivement les répertoires si inexistants
+    """Create directories recursively if they don't exist."""
     parts = path.strip("/").split("/")
     cur = ""
     for p in parts:
@@ -111,10 +120,11 @@ def makedirs(path):
         try:
             os.mkdir(cur)
         except OSError:
-            # existe déjà ou impossible de créer -> on continue
-            pass
+            pass  # Already exists
+
 
 def download_file(url, dest_path):
+    """Download a file from URL to destination path."""
     print("Téléchargement:", url, "->", dest_path)
     r = request_with_retries(url, headers=HEADERS)
     if not r:
@@ -132,7 +142,7 @@ def download_file(url, dest_path):
     data = r.content
     r.close()
 
-    # si le fichier local existe et que son contenu est identique, on saute l'écriture
+    # Skip writing if file is identical
     if SKIP_IF_IDENTICAL:
         try:
             with open(dest_path, "rb") as f:
@@ -143,21 +153,18 @@ def download_file(url, dest_path):
             print("Fichier existant identique, saut:", dest_path)
             return True
 
-    # écrire en binaire de façon plus sûre: écrire dans un fichier temporaire puis renommer
+    # Write to temp file then rename for atomic write
     tmp_path = dest_path + ".tmp"
     try:
         with open(tmp_path, "wb") as f:
             f.write(data)
-        # remplacer l'ancien fichier de façon atomique si possible
         try:
-            # supprimer l'ancien fichier si présent (rename may overwrite on some ports)
             os.remove(dest_path)
         except Exception:
             pass
         os.rename(tmp_path, dest_path)
     except Exception as e:
         print("Erreur écriture fichier:", e)
-        # tenter de supprimer le tmp en échec
         try:
             os.remove(tmp_path)
         except Exception:
@@ -165,12 +172,16 @@ def download_file(url, dest_path):
         return False
     return True
 
+
 def download_directory_recursive(api_url, local_dir):
-    """Télécharge récursivement un répertoire depuis l'API GitHub.
+    """Download a directory recursively from GitHub API.
     
     Args:
-        api_url: URL de l'API GitHub pour le contenu du répertoire
-        local_dir: Chemin local où sauvegarder les fichiers
+        api_url: GitHub API URL for the directory contents
+        local_dir: Local path to save files to
+    
+    Returns:
+        True if all downloads succeeded, False otherwise
     """
     print("Listing:", api_url)
     r = request_with_retries(api_url, headers=HEADERS)
@@ -186,13 +197,13 @@ def download_directory_recursive(api_url, local_dir):
         if msg:
             print("Message API:", msg)
             if r.status_code == 403:
-                print("Si c'est une limitation d'API, créez un Personal Access Token et assignez la variable GITHUB_TOKEN dans ce script.")
+                print("Si c'est une limitation d'API, créez un Personal Access Token et assignez GITHUB_TOKEN.")
         r.close()
         return False
     items = r.json()
     r.close()
     
-    # s'assurer que le répertoire local existe
+    # Ensure local directory exists
     makedirs(local_dir)
     
     success = True
@@ -211,7 +222,7 @@ def download_directory_recursive(api_url, local_dir):
             if not download_file(download_url, dest):
                 success = False
         elif itype == "dir":
-            # Récursion dans le sous-répertoire
+            # Recurse into subdirectory
             sub_api_url = item.get("url")
             if not sub_api_url:
                 print("Pas d'URL API pour le sous-répertoire", name)
@@ -222,17 +233,24 @@ def download_directory_recursive(api_url, local_dir):
     
     return success
 
-def download_single_file_from_repo(repo_path, dest_path):
-    print(f"Récupération des infos pour {repo_path}...")
+
+def download_single_file(repo_path, dest_path):
+    """Download a single file from the repository.
+    
+    Args:
+        repo_path: Path in the repository (e.g., "secrets.py.example")
+        dest_path: Local destination path
+    """
+    print(f"Récupération: {repo_path}...")
     api_url = f"https://api.github.com/repos/dfasani/fasapico/contents/{repo_path}"
     r = request_with_retries(api_url, headers=HEADERS)
     if not r:
-        return
+        return False
     
     if r.status_code != 200:
-        print(f"Impossible de récupérer les infos du fichier {repo_path} (Code {r.status_code})")
+        print(f"Impossible de récupérer {repo_path} (Code {r.status_code})")
         r.close()
-        return
+        return False
 
     try:
         data = r.json()
@@ -240,43 +258,50 @@ def download_single_file_from_repo(repo_path, dest_path):
     except Exception as e:
         print("Erreur parsing JSON:", e)
         r.close()
-        return
+        return False
     r.close()
 
     if not download_url:
         print(f"Pas de download_url pour {repo_path}")
-        return
+        return False
 
-    download_file(download_url, dest_path)
+    return download_file(download_url, dest_path)
+
 
 def main():
     ssid = SSID
     password = PASSWORD
     
-    # Try to load from secrets.py (locally existing)
+    # Try to load WiFi credentials from secrets.py
     try:
         import secrets
         ssid = getattr(secrets, 'ssid', SSID)
         password = getattr(secrets, 'password', PASSWORD)
-        print("Paramètres WiFi chargés depuis secrets.py local")
+        print("Paramètres WiFi chargés depuis secrets.py")
     except ImportError:
-        print("secrets.py non trouvé localement, utilisation des paramètres par défaut")
+        print("secrets.py non trouvé, utilisation des paramètres par défaut")
 
     if ssid == "VOTRE_SSID" or password == "VOTRE_MOT_DE_PASSE":
-        raise SystemExit("Remplir SSID et PASSWORD dans le script avant exécution.")
+        raise SystemExit("Remplir SSID et PASSWORD dans secrets.py avant exécution.")
     
     connect_wifi(ssid, password)
     
-    # 1. Télécharger le package fasapico complet -> /lib/fasapico/
+    # 1. Download the complete fasapico package -> /lib/fasapico/
     print("\n=== Téléchargement du package fasapico ===")
     download_directory_recursive(GITHUB_API, "/lib/fasapico")
     
-    # 2. Récupérer secrets.py -> /secrets.py
-    # On suppose que secrets.py est à la racine du repo
-    print("\n=== Téléchargement de secrets.py ===")
-    download_single_file_from_repo("secrets.py", "/secrets.py")
+    # 2. Download secrets.py.example if secrets.py doesn't exist
+    try:
+        open("/secrets.py", "r").close()
+        print("\n=== secrets.py existe déjà, pas de téléchargement ===")
+    except OSError:
+        print("\n=== Téléchargement de secrets.py.example ===")
+        download_single_file("secrets.py.example", "/secrets.py.example")
+        print("Renommez secrets.py.example en secrets.py et configurez vos identifiants!")
 
-    print("\n=== Mise à jour terminée. ===")
+    print("\n=== Mise à jour terminée! ===")
+    print("Le package fasapico est maintenant dans /lib/fasapico/")
+
 
 if __name__ == "__main__":
     main()

@@ -429,7 +429,7 @@ def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback
 
     return client
 
-class MqttHandler:
+class ClientMQTT:
     def __init__(self, broker, port, client_id, topic_cmd=None, callback=None):
         self.broker = broker
         self.port = port

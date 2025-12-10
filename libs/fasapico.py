@@ -809,7 +809,14 @@ class bmm150(object):
     timeout = utime.time() + 10 # 10 sec
     while True:
         self.i2cbus = SoftI2C(scl=Pin(sclPin), sda=Pin(sdaPin), freq=100000)
-        if len(self.i2cbus.scan()) > 0 or utime.time() > timeout:
+        devices = self.i2cbus.scan()
+
+        if 19 in devices: # 0x13 is 19
+            print("[INFO] BMM150 found!")
+            utime.sleep_ms(100) # Wait for stabilization
+            break
+        if utime.time() > timeout:
+            print("[ERROR] BMM150 init timeout")
             break
         
         utime.sleep_ms(100)
@@ -817,7 +824,12 @@ class bmm150(object):
     self.address = 0x13
 
   def read_reg(self, reg, len):
-    return list(self.i2cbus.readfrom_mem(self.address, reg, len))
+    for attempt in range(3):
+        try:
+            return list(self.i2cbus.readfrom_mem(self.address, reg, len))
+        except OSError:
+            if attempt == 2: raise
+            utime.sleep_ms(10)
 
   def write_reg(self, reg, data):
     if isinstance(data, int):
@@ -826,7 +838,14 @@ class bmm150(object):
         buf = bytearray(data)
     else:
         buf = data
-    self.i2cbus.writeto_mem(self.address, reg, buf)
+    
+    for attempt in range(3):
+        try:
+            self.i2cbus.writeto_mem(self.address, reg, buf)
+            break
+        except OSError:
+            if attempt == 2: raise
+            utime.sleep_ms(10)
 
 
   def sensor_init(self):

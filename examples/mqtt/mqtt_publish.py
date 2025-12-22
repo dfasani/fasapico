@@ -3,9 +3,9 @@
 
 
 from fasapico import *
-import secrets
 
-ip = connect_to_wifi()
+ip = connect_to_wifi(ssid = "icam_iot" , password = "Summ3#C@mp2022")
+print(f"Connecté au WiFi avec l'ip {ip}")
 
 
 #												#
@@ -14,7 +14,7 @@ ip = connect_to_wifi()
 #												#
 
 #merci de remplacer "tonPrenomTonNomIci" , sinon on va se faire jeter par le serveur
-clientMQTT = MQTTClientSimple(client_id="tonPrenomTonNomIci", server="mqtt.dev.icam.school", ssl=True)
+clientMQTT = MQTTClientSimple(client_id="tonPrenomTonNomIci", server="mqtt.dev.icam.school")
 clientMQTT.connect()
 clientMQTT.publish(topic="bzh/iot/demo/maquette/a3" , msg="bientot le WE !") #tu peux changer de topic et de msg !
 clientMQTT.disconnect()

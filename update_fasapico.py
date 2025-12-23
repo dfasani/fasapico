@@ -289,15 +289,6 @@ def main():
     # 1. Download the complete fasapico package -> /lib/fasapico/
     print("\n=== Téléchargement du package fasapico ===")
     download_directory_recursive(GITHUB_API, "/lib/fasapico")
-    
-    # 2. Download secrets.py.example if secrets.py doesn't exist
-    try:
-        open("/secrets.py", "r").close()
-        print("\n=== secrets.py existe déjà, pas de téléchargement ===")
-    except OSError:
-        print("\n=== Téléchargement de secrets.py.example ===")
-        download_single_file("secrets.py.example", "/secrets.py.example")
-        print("Renommez secrets.py.example en secrets.py et configurez vos identifiants!")
 
     print("\n=== Mise à jour terminée! ===")
     print("Le package fasapico est maintenant dans /lib/fasapico/")

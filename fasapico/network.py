@@ -12,22 +12,17 @@ from .utils import warn, error, info, debug, decode_bytes
 # Network Utilities
 # ==========================================
 
+WIFI_SSID = "icam_iot"
+WIFI_PWD = "Summ3#C@mp2022"
+
 def is_connected_to_wifi():
-  wlan = network.WLAN(network.STA_IF)
-  return wlan.isconnected()
+    wlan = network.WLAN(network.STA_IF)
+    return wlan.isconnected()
 
 # helper method to quickly get connected to wifi
 def connect_to_wifi(ssid=None, password=None, timeout_seconds=30, debug=False):
-    if ssid is None or password is None:
-        try:
-            import secrets
-            ssid = ssid or getattr(secrets, 'ssid', None)
-            password = password or getattr(secrets, 'password', None)
-            if ssid is None or password is None:
-               raise ValueError("secrets.py must contain 'ssid' and 'password'")
-        except ImportError:
-            print("Erreur: secrets.py introuvable et pas d'arguments fournis.")
-            raise ValueError("SSID/Password not provided and secrets.py missing")
+    ssid = ssid or WIFI_SSID
+    password = password or WIFI_PWD
 
     statuses = {
         network.STAT_IDLE: "idle",
@@ -39,20 +34,20 @@ def connect_to_wifi(ssid=None, password=None, timeout_seconds=30, debug=False):
     }
 
     wlan = network.WLAN(network.STA_IF)
-    
+
     # 🔄 Réinitialisation propre
     wlan.active(False)
     wlan.active(True)
     wlan.disconnect()
     time.sleep(1)
-    
+
     wlan.connect(ssid, password)
     start = time.ticks_ms()
     status = wlan.status()
 
     if debug:
         print(f"Tentative de connexion à {ssid}...")
-    
+
     while not wlan.isconnected() and (time.ticks_ms() - start) < (timeout_seconds * 1000):
         status = wlan.status()
         if debug:
@@ -68,21 +63,20 @@ def connect_to_wifi(ssid=None, password=None, timeout_seconds=30, debug=False):
     if debug:
         print(f"Configuration réseau complète : {ifconfig_data}")
         print("Attente pour stabilisation du WiFi...")
-    
+
     time.sleep(1)
     return ifconfig_data[0]
 
 # helper method to put the pico into access point mode
-def access_point(ssid, password = None):
-  # start up network in access point mode  
-  wlan = network.WLAN(network.AP_IF)
-  wlan.config(essid=ssid)
-  if password:
-    wlan.config(password=password)
-  else:    
-    wlan.config(security=0) # disable password
-  wlan.active(True)
-  return wlan
+def access_point(ssid, password=None):
+    wlan = network.WLAN(network.AP_IF)
+    wlan.config(essid=ssid)
+    if password:
+        wlan.config(password=password)
+    else:
+        wlan.config(security=0)  # disable password
+    wlan.active(True)
+    return wlan
 
 def get_url(url, debug=False):
     url = url.strip()
@@ -380,11 +374,11 @@ def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback
     """
     # 1. Check WiFi
     if not is_connected_to_wifi():
-        warn("WiFi perdu. Tentative de reconnexion auto via secrets...")
+        warn("WiFi perdu. Tentative de reconnexion auto via configuration par défaut...")
         try:
-            connect_to_wifi() # Utilise secrets.py
+            connect_to_wifi()  # Utilise les valeurs par défaut
         except Exception as e:
-            error(f"Echec reconnexion WiFi: {e}")
+            error(f"Échec reconnexion WiFi: {e}")
             return None
 
     # 1c. Check Internet (Optionnel mais recommandé)
@@ -396,10 +390,10 @@ def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback
     if client:
         try:
             client.ping()
-            return client # Tout va bien
+            return client  # Tout va bien
         except:
             error("Lien MQTT mort.")
-            client = None # On force la reconnexion
+            client = None  # On force la reconnexion
 
     # 3. (Re)Connect MQTT
     if client is None:
@@ -407,7 +401,7 @@ def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback
             info(f"Connexion au broker {server_broker}:{port}...")
             # Petit délai stabilisateur
             time.sleep(1)
-            
+
             client = MQTTClientSimple(
                 client_id=client_id,
                 server=server_broker,
@@ -415,17 +409,17 @@ def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback
             )
             client.set_callback(callback)
             client.connect()
-            
+
             if topic_cmd:
                 info(f"Abonnement à {topic_cmd}")
                 client.subscribe(topic_cmd)
-            
+
             info("MQTT Connecté & Abonné !")
             return client
-            
+
         except Exception as e:
-             error(f"Echec Connexion MQTT: {e}")
-             return None
+            error(f"Échec Connexion MQTT: {e}")
+            return None
 
     return client
 
@@ -452,7 +446,7 @@ class ClientMQTT:
             port=self.port
         )
         return self.client
-    
+
     def publish(self, topic, message):
         """
         Publie un message si connecté.
@@ -470,7 +464,7 @@ class ClientMQTT:
         Vérifie les messages entrants (doit être appelé dans la boucle principale).
         """
         if self.client:
-             try:
-                 self.client.check_msg()
-             except Exception as e:
-                 error(f"Erreur check_msg: {e}") 
+            try:
+                self.client.check_msg()
+            except Exception as e:
+                error(f"Erreur check_msg: {e}")

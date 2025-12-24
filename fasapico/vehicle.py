@@ -229,3 +229,20 @@ class Voiture:
         self.rotation_horaire()
         time.sleep_ms(1000)
         self.stop()
+
+    def mode_evitement_actif(self, sensor, distance_seuil=20):
+        """
+        Vérifie la distance et prend une action si un obstacle est trop proche.
+        sensor: instance de GroveUltrasonicRanger ou FilteredUltrasonic
+        distance_seuil: distance en cm en dessous de laquelle l'action est déclenchée.
+        Retourne True si un obstacle a été détecté et évité.
+        """
+        d = sensor.get_distance()
+        if 0 < d < distance_seuil:
+            import time
+            warn(f"OBSTACLE DETECTE à {d}cm! Manoeuvre d'urgence.")
+            self.stop()
+            time.sleep_ms(100)
+            self.manoeuvre_evitement()
+            return True
+        return False

@@ -22,6 +22,12 @@ def is_connected_to_wifi():
   wlan = network.WLAN(network.STA_IF)
   return wlan.isconnected()
 
+def get_mac_address():
+    """Retourne l'adresse MAC du Pico en format string (hex)."""
+    import ubinascii
+    wlan = network.WLAN(network.STA_IF)
+    return ubinascii.hexlify(wlan.config('mac'), ':').decode().upper()
+
 # helper method to quickly get connected to wifi
 def connect_to_wifi(ssid=None, password=None, timeout_seconds=30, debug=False):
     # Utiliser les valeurs par défaut si non fournies
@@ -115,6 +121,18 @@ def check_internet_connection(dns_server="8.8.8.8", port=53):
         s.close()
         return True
     except:
+        return False
+
+def sync_time():
+    """Synchronise l'horloge interne avec un serveur NTP."""
+    import ntptime
+    try:
+        info("Synchronisation de l'heure via NTP...")
+        ntptime.settime()
+        info("Heure synchronisée.")
+        return True
+    except Exception as e:
+        error(f"Echec synchronisation NTP: {e}")
         return False
 
 # ==========================================
@@ -498,3 +516,12 @@ class ClientMQTT:
                  self.client.check_msg()
              except Exception as e:
                  error(f"Erreur check_msg: {e}")
+
+    def subscribe(self, topic):
+        """S'abonne à un topic supplémentaire."""
+        if self.client:
+            try:
+                self.client.subscribe(topic)
+                info(f"Nouvel abonnement : {topic}")
+            except Exception as e:
+                error(f"Erreur abonnement {topic}: {e}")

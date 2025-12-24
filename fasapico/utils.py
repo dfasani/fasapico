@@ -64,6 +64,37 @@ def scale(x, in_min, in_max, out_min, out_max):
 def scale_to_int(x, in_min, in_max, out_min, out_max):
     return int(scale(x, in_min, in_max, out_min, out_max))
 
+def constrain(val, min_val, max_val):
+    """Limite une valeur entre un min et un max."""
+    return max(min_val, min(max_val, val))
+
+def deadband(value, threshold):
+    """Ignore les valeurs proches de zéro (utile pour les joysticks)."""
+    if abs(value) < threshold:
+        return 0
+    return value
+
+class PIDController:
+    """Contrôleur PID simple pour réguler un système."""
+    def __init__(self, kp, ki, kd):
+        self.kp = kp
+        self.ki = ki
+        self.kd = kd
+        self.last_error = 0
+        self.integral = 0
+
+    def compute(self, setpoint, current_value, dt=1.0):
+        error = setpoint - current_value
+        self.integral += error * dt
+        derivative = (error - self.last_error) / dt
+        output = (self.kp * error) + (self.ki * self.integral) + (self.kd * derivative)
+        self.last_error = error
+        return output
+
+    def reset(self):
+        self.last_error = 0
+        self.integral = 0
+
 def decode_bytes(data):
     """
     Décode les bytes en string utf-8 de manière sûre.

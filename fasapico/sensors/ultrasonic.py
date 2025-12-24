@@ -33,3 +33,20 @@ class GroveUltrasonicRanger:
         distance = (timepassed * 0.0343) / 2
         
         return distance
+
+class FilteredUltrasonic(GroveUltrasonicRanger):
+    def __init__(self, pin, size=5):
+        super().__init__(pin)
+        self.size = size
+        self.history = []
+
+    def get_distance(self):
+        d = super().get_distance()
+        if d > 0:
+            self.history.append(d)
+            if len(self.history) > self.size:
+                self.history.pop(0)
+        
+        if not self.history:
+            return 0
+        return sum(self.history) / len(self.history)

@@ -50,10 +50,17 @@ class Moteur:
         self.etat = "arrière"
 
     def stop(self):
-        """Arrête le moteur."""
+        """Arrête le moteur (roue libre)."""
         self.in1.low()
         self.in2.low()
         self.etat = "stop"
+
+    def freiner(self):
+        """Freinage actif (court-circuitage du moteur)."""
+        self.in1.high()
+        self.in2.high()
+        self.pwm.duty_u16(65535)
+        self.etat = "freinage"
 
     def set_direction_et_vitesse(self, direction, vitesse):
         """
@@ -92,8 +99,16 @@ class Moteur:
         return f"Moteur({self.in1}, {self.in2}, {self.pwm}, Etat: {self.etat}, PWM: {self.pwm.duty_u16()})"
 
 class Stepper:
-    def __init__(self, pin1=10, pin2=11, pin3=12, pin4=13):
+    def __init__(self, pin1=10, pin2=11, pin3=12, pin4=13, steps_per_rev=2048):
         self.pins = [Pin(pin1, Pin.OUT), Pin(pin2, Pin.OUT), Pin(pin3, Pin.OUT), Pin(pin4, Pin.OUT)]
+        self.steps_per_rev = steps_per_rev
+        self.delay_ms = 5
+
+    def set_speed_rpm(self, rpm):
+        """Définit la vitesse en tours par minute."""
+        if rpm > 0:
+            # Calcul approximatif du délai entre chaque pas
+            self.delay_ms = max(2, int(60000 / (rpm * self.steps_per_rev / 4)))
 
     def move(self, nbPas):
         if nbPas > 0:
@@ -105,4 +120,9 @@ class Stepper:
             for step in steps_sequence:
                 for i in range(4):
                     self.pins[i].value(step[i])
-                time.sleep_ms(5)
+                time.sleep_ms(self.delay_ms)
+
+    def move_to_angle(self, angle_deg):
+        """Déplace le moteur jusqu'à un angle donné (relatif)."""
+        nb_pas = int((angle_deg / 360) * self.steps_per_rev)
+        self.move(nb_pas)

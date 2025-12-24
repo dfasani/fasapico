@@ -11,17 +11,29 @@ moteur_d = Moteur(broche_in1=4, broche_in2=3, broche_pwm=2, vitesse=50000)
 # Création d'une voiture
 ma_voiture = Voiture(moteur_a, moteur_b, moteur_c, moteur_d)
 
-print("Avant")
-ma_voiture.definir_vitesse(60000)
+print("Avant à 50%")
+ma_voiture.definir_vitesse_pourcentage(50)
 ma_voiture.avancer()
-sleep(5)
-
-print("Stop")
-ma_voiture.stop()
 sleep(2)
 
-
-
-print("Stop")
-ma_voiture.stop()
+print("Virage différentiel à droite")
+ma_voiture.piloter_differentiel(vitesse=40, direction=30)
 sleep(2)
+
+print("Demi-tour")
+ma_voiture.faire_demi_tour()
+sleep(1)
+
+print("Vibration")
+ma_voiture.vibrer()
+sleep(1)
+
+print("Omnidirectionnel : Diagonale Droite (45°)")
+ma_voiture.piloter_omnidirectionnel(direction_deg=45, puissance=50)
+sleep(2)
+
+print("Mode Démonstration")
+ma_voiture.demonstration()
+
+print("Arrêt progressif")
+ma_voiture.arreter_progressivement()

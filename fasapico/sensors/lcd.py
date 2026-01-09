@@ -1,6 +1,7 @@
 from machine import Pin, SoftI2C
 import utime
 import time
+from time import *
 
 class Grove_LCD_I2C(object):
     # Commands

@@ -11,6 +11,8 @@ button20 = Pin(20, Pin.IN, Pin.PULL_UP)
 button21 = Pin(21, Pin.IN, Pin.PULL_UP)
 button22 = Pin(22, Pin.IN, Pin.PULL_UP)
 
+# pour rappel voici le fonctionnement du servo
+# https://github.com/dfasani/fasapico/blob/main/examples/actionneurs/moteurs/servo/servomoteur.py
 servo = PWM(Pin(7) , freq=50)
 
 SERVO_BABORD  = 3000 #valeur min pour aller à babord toutes
@@ -85,10 +87,11 @@ while True:
         
         #2 - conversion
         #potValeur est dans [0;65535] il faut le ramener dans [SERVO_BABORD ; SERVO_TRIBORD] soit [3000 ; 7000]
-        #rapportCyclique = scale(....     # importer fasapico en début de fichier, la doc est ici --> https://github.com/dfasani/fasapico/blob/main/examples/use_scale_function.py
+        # La fonction scale_to_int() est super pratique ici !
+        #rapportCyclique = scale_to_int(....     # importer fasapico en début de fichier, la doc est ici --> https://github.com/dfasani/fasapico/blob/main/examples/use_scale_function.py
         
         #3 - signal PWM pour servo
-        #generer un signal PWM a destination du servo (c.f. exemple https://github.com/dfasani/fasapico/blob/main/examples/servo.py)
+        #generer un signal PWM a destination du servo (c.f. exemple https://github.com/dfasani/fasapico/blob/main/examples/actionneurs/moteurs/servo/servomoteur.py)
         
         
     
@@ -177,4 +180,5 @@ while True:
         #print()
             
         #3 - transmission de la valeur de commandeServo au safran (signal PWM pour servo entre 3000 et 7000)
+
         #servo.duty ...  (commandeServo)

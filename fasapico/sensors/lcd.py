@@ -41,13 +41,13 @@ class Grove_LCD_I2C(object):
     LCD_1LINE = 0x00 
     LCD_5x10DOTS = 0x04
     LCD_5x8DOTS = 0x00
- 
+
     def __init__(self, i2c_num=0, sda_pin=4, scl_pin=5 ,address=62, oneline=False, charsize=LCD_5x8DOTS):
-        
+
         #print("LCD\t\t\tidI2C" , i2c_num, "sdaPin" , sda_pin , "sclPin" ,scl_pin )
 
         #David : if init fails, give a 10 sec retry loop!
-      
+
         timeout = utime.time() + 10 # 10 sec
         while True:
             #i2cGrove = I2C(i2c_num, sda=Pin(sda_pin), scl=Pin(scl_pin), freq=1000)
@@ -100,8 +100,8 @@ class Grove_LCD_I2C(object):
         c = bytearray([c])
         self.i2c.writeto_mem(self.address, 0x40, c)
 
-    def write(self, text):
-        text = str(text) #conversion auto en STR
+    def write(self, *args):
+        text = ' '.join(map(str, args))  # Transforme chaque argument en chaîne et insère un espace
         for char in text:
             if char == '\n':
                 self.cursor_position(0, 1)

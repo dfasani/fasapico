@@ -102,11 +102,14 @@ class Grove_LCD_I2C(object):
 
     def write(self, *args):
         text = ' '.join(map(str, args))  # Transforme chaque argument en chaîne et insère un espace
+        new_line = False  # Variable pour suivre si on a déjà effectué un saut de ligne
         for char in text:
-            if char == '\n':
+            if char == '\n' and not new_line:
                 self.cursor_position(0, 1)
-            else:
+                new_line = True  # Premier saut de ligne traité
+            elif char != '\n':
                 self.write_char(ord(char))
+                new_line = False  # Réinitialise l'état après avoir trouvé un caractère normal
 
     def cursor(self, state):
         if state:

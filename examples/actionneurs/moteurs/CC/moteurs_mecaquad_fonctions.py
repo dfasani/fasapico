@@ -24,13 +24,13 @@ def reculer():
     moteur_c.arriere()
     moteur_d.arriere()
 
-def glisser_droite():
+def translation_droite():
     moteur_a.stop()
     moteur_b.stop()
     moteur_c.stop()
     moteur_d.stop()
 
-def glisser_gauche(): 
+def translation_gauche(): 
     moteur_a.avant()
     moteur_b.arriere()
     moteur_c.arriere()
@@ -90,14 +90,14 @@ sleep_ms(1000)
 stop()
 sleep_ms(1000)
 
-print("Glisser à droite")
-glisser_droite()
+print("Translation à droite")
+translation_droite()
 sleep_ms(1000)
 stop()
 sleep_ms(1000)
 
-print("Glisser à gauche")
-glisser_gauche()
+print("Translation à gauche")
+translation_gauche()
 sleep_ms(1000)
 stop()
 sleep_ms(1000)

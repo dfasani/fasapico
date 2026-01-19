@@ -20,13 +20,13 @@ class Voiture:
         self.moteur_c.arriere()
         self.moteur_d.arriere()
 
-    def glisser_droite(self):
+    def translation_droite(self):
         self.moteur_a.arriere()
         self.moteur_b.avant()
         self.moteur_c.avant()
         self.moteur_d.arriere()
 
-    def glisser_gauche(self): 
+    def translation_gauche(self): 
         self.moteur_a.avant()
         self.moteur_b.arriere()
         self.moteur_c.arriere()
@@ -192,16 +192,16 @@ class Voiture:
         _appliquer(self.moteur_d, vd)
 
     def carre(self, cote_ms=1000):
-        """Parcours un carré en utilisant les glissements latéraux."""
+        """Parcours un carré en utilisant les translations latérales."""
         import time
         self.definir_vitesse_pourcentage(50)
         self.avancer()
         time.sleep_ms(cote_ms)
-        self.glisser_droite()
+        self.translation_droite()
         time.sleep_ms(cote_ms)
         self.reculer()
         time.sleep_ms(cote_ms)
-        self.glisser_gauche()
+        self.translation_gauche()
         time.sleep_ms(cote_ms)
         self.stop()
 
@@ -221,10 +221,10 @@ class Voiture:
         import time
         self.vibrer()
         time.sleep_ms(500)
-        self.glisser_droite()
+        self.translation_droite()
         self.definir_vitesse_pourcentage(50)
         time.sleep_ms(1000)
-        self.glisser_gauche()
+        self.translation_gauche()
         time.sleep_ms(1000)
         self.rotation_horaire()
         time.sleep_ms(1000)

@@ -126,3 +126,102 @@ class Stepper:
         """Déplace le moteur jusqu'à un angle donné (relatif)."""
         nb_pas = int((angle_deg / 360) * self.steps_per_rev)
         self.move(nb_pas)
+
+
+class ServoMoteur:
+    """
+    Classe pour contrôler un servo moteur standard (SG90, MG90S, etc.).
+    
+    Les servos standards utilisent un signal PWM à 50Hz avec un duty cycle
+    variant entre ~2.5% (0°) et ~12.5% (180°).
+    """
+    
+    def __init__(self, broche, angle_min=0, angle_max=180, freq=50, 
+                 duty_min=1638, duty_max=8192):
+        """
+        Initialise le servo moteur.
+        
+        Args:
+            broche: Numéro de la broche GPIO
+            angle_min: Angle minimum (par défaut 0°)
+            angle_max: Angle maximum (par défaut 180°)
+            freq: Fréquence PWM en Hz (par défaut 50Hz pour les servos standards)
+            duty_min: Duty cycle minimum (0°) en u16 (par défaut ~2.5% = 1638)
+            duty_max: Duty cycle maximum (180°) en u16 (par défaut ~12.5% = 8192)
+        """
+        if not isinstance(broche, int) or not (0 <= broche <= 27):
+            raise ValueError("La broche doit être un entier valide (0-27).")
+        
+        self.pwm = PWM(Pin(broche), freq=freq, duty_u16=0)
+        self.angle_min = angle_min
+        self.angle_max = angle_max
+        self.duty_min = duty_min
+        self.duty_max = duty_max
+        self._angle_actuel = None
+    
+    def definir_angle(self, angle):
+        """
+        Définit l'angle du servo moteur.
+        
+        Args:
+            angle: Angle souhaité (entre angle_min et angle_max)
+        """
+        if not (self.angle_min <= angle <= self.angle_max):
+            raise ValueError(f"L'angle doit être entre {self.angle_min} et {self.angle_max}.")
+        
+        duty = scale_to_int(angle, self.angle_min, self.angle_max, 
+                           self.duty_min, self.duty_max)
+        self.pwm.duty_u16(duty)
+        self._angle_actuel = angle
+    
+    def definir_pourcentage(self, pourcentage):
+        """
+        Définit la position du servo en pourcentage (0% = angle_min, 100% = angle_max).
+        
+        Args:
+            pourcentage: Position en pourcentage (0 à 100)
+        """
+        if not (0 <= pourcentage <= 100):
+            raise ValueError("Le pourcentage doit être entre 0 et 100.")
+        
+        angle = scale(pourcentage, 0, 100, self.angle_min, self.angle_max)
+        self.definir_angle(angle)
+    
+    def centre(self):
+        """Place le servo à sa position centrale (90° par défaut)."""
+        angle_centre = (self.angle_min + self.angle_max) / 2
+        self.definir_angle(angle_centre)
+    
+    def min(self):
+        """Place le servo à sa position minimale."""
+        self.definir_angle(self.angle_min)
+    
+    def max(self):
+        """Place le servo à sa position maximale."""
+        self.definir_angle(self.angle_max)
+    
+    def desactiver(self):
+        """Désactive le signal PWM (le servo ne maintient plus sa position)."""
+        self.pwm.duty_u16(0)
+    
+    def balayage(self, pas=5, delai_ms=50):
+        """
+        Effectue un balayage de l'angle minimum à l'angle maximum.
+        
+        Args:
+            pas: Incrément d'angle par étape (par défaut 5°)
+            delai_ms: Délai entre chaque étape en ms (par défaut 50ms)
+        """
+        for angle in range(self.angle_min, self.angle_max + 1, pas):
+            self.definir_angle(angle)
+            time.sleep_ms(delai_ms)
+        for angle in range(self.angle_max, self.angle_min - 1, -pas):
+            self.definir_angle(angle)
+            time.sleep_ms(delai_ms)
+    
+    def get_angle(self):
+        """Retourne l'angle actuel du servo."""
+        return self._angle_actuel
+    
+    def __str__(self):
+        return f"ServoMoteur(angle={self._angle_actuel}, min={self.angle_min}, max={self.angle_max})"

@@ -3,70 +3,91 @@ from fasapico import *
 from fasapico.motors import ServoMoteur
 from machine import Pin, ADC
 import time
+import sys
+import uselect
 
 # --- CONFIGURATION ---
 PIN_ADC = 27
 PINS_STEPPER = [10, 11, 12, 13]
 PIN_SERVO = 7
 
-def test_maquette_globale():
-    print("--- DÉMARRAGE DU TEST GLOBAL ---")
+# On prépare le "lecteur" de clavier non-bloquant
+spoll = uselect.poll()
+spoll.register(sys.stdin, uselect.POLLIN)
 
-    # 1. TEST LCD & BOUSSOLE
-    print("1/5 - Initialisation LCD et Boussole...")
-    lcd = Grove_LCD_I2C()
-    boussole = Boussole()
+def a_appuye_entree():
+    """Vérifie si la touche Entrée a été pressée sans bloquer le code."""
+    return bool(spoll.poll(0))
+
+def vider_buffer():
+    """Vide les caractères restants dans le tampon d'entrée."""
+    while spoll.poll(0):
+        sys.stdin.read(1)
+
+def boucle_jusque_entree(nom, action_unitaire):
+    """Exécute 'action_unitaire' en boucle jusqu'à un appui sur Entrée."""
+    print(f"\n>>> TEST EN COURS : {nom}")
+    print(">>> Appuyez sur [ENTREE] pour passer au test suivant.")
     
-    lcd.clear()
-    lcd.write("Test en cours...")
+    vider_buffer() # On ignore les appuis accidentels précédents
     
+    while True:
+        action_unitaire()
+        if a_appuye_entree():
+            print(f"[FIN DU TEST : {nom}]")
+            break
+
+# --- ACTIONS UNITAIRES ---
+
+def action_boussole(boussole, lcd):
     if boussole.sensor_init() != boussole.ERROR:
         cap = boussole.get_compass_degree()
-        msg = f"Cap: {cap:.0f} deg"
-        print(f"[OK] Boussole : {msg}")
+        msg = f"Cap: {cap:.1f} deg"
+        print(msg)
         lcd.clear()
         lcd.write(msg)
-    else:
-        print("[ERR] Boussole non detectee")
-    time.sleep(2)
+    time.sleep(0.5)
 
-    # 2. TEST ADC (Capteur analogique)
-    print("2/5 - Lecture ADC...")
-    adc = ADC(PIN_ADC)
+def action_adc(adc, lcd):
     valeur = adc.read_u16()
-    print(f"[OK] Valeur ADC : {valeur}")
+    print(f"ADC: {valeur}")
     lcd.clear()
-    lcd.write(f"ADC: {valeur}")
-    time.sleep(2)
+    lcd.write(f"Potar: {valeur}")
+    time.sleep(0.1)
 
-    # 3. TEST SERVO (Mouvement rapide)
-    print("3/5 - Test Servo...")
-    servo = ServoMoteur(PIN_SERVO, angle_min=50, angle_max=130)
+def action_servo(servo):
     servo.min()
-    time.sleep(0.5)
+    time.sleep(0.6)
     servo.max()
-    time.sleep(0.5)
-    servo.centre()
-    servo.desactiver()
-    print("[OK] Servo testé")
+    time.sleep(0.6)
 
-    # 4. TEST MOTEUR PAS-À-PAS (Une rotation courte)
-    print("4/5 - Test Moteur Pas-a-Pas...")
+def action_stepper(stepper_pins, seq):
+    for step in seq:
+        for i in range(4):
+            stepper_pins[i].value(step[i])
+        time.sleep_ms(10)
+
+# --- PROGRAMME PRINCIPAL ---
+
+def main():
+    # Initialisations
+    lcd = Grove_LCD_I2C()
+    boussole = Boussole()
+    adc = ADC(PIN_ADC)
+    servo = ServoMoteur(PIN_SERVO, angle_min=50, angle_max=130)
     stepper_pins = [Pin(p, Pin.OUT) for p in PINS_STEPPER]
     seq = [[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
-    
-    for _ in range(20): # Petit mouvement
-        for step in seq:
-            for i in range(4):
-                stepper_pins[i].value(step[i])
-            time.sleep_ms(10)
-    print("[OK] Moteur PAP testé")
 
-    # 5. FIN
-    print("5/5 - Fin du test")
-    lcd.clear()
-    lcd.write("TEST TERMINE\nTOUT EST OK")
-    print("--- TEST TERMINE AVEC SUCCÈS ---")
+    # Lancement des boucles
+    boucle_jusque_entree("BOUSSOLE", lambda: action_boussole(boussole, lcd))
+    boucle_jusque_entree("POTENTIOMETRE", lambda: action_adc(adc, lcd))
+    boucle_jusque_entree("SERVO", lambda: action_servo(servo))
+    boucle_jusque_entree("MOTEUR PAS-A-PAS", lambda: action_stepper(stepper_pins, seq))
+
+    # Nettoyage
+    for pin in stepper_pins: pin.value(0)
+    servo.desactiver()
+    print("\n--- TOUS LES TESTS SONT TERMINÉS ---")
 
 if __name__ == "__main__":
-    test_maquette_globale()
+    main()

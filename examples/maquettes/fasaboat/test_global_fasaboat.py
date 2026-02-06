@@ -11,13 +11,16 @@ PIN_ADC = 27
 PINS_STEPPER = [10, 11, 12, 13]
 PIN_SERVO = 7
 
-# On prépare le "lecteur" de clavier non-bloquant
+# Préparation de la lecture clavier non-bloquante
 spoll = uselect.poll()
 spoll.register(sys.stdin, uselect.POLLIN)
 
 def a_appuye_entree():
     """Vérifie si la touche Entrée a été pressée sans bloquer le code."""
-    return bool(spoll.poll(0))
+    if spoll.poll(0):
+        sys.stdin.read(1) # Consomme le caractère
+        return True
+    return False
 
 def vider_buffer():
     """Vide les caractères restants dans le tampon d'entrée."""
@@ -29,7 +32,7 @@ def boucle_jusque_entree(nom, action_unitaire):
     print(f"\n>>> TEST EN COURS : {nom}")
     print(">>> Appuyez sur [ENTREE] pour passer au test suivant.")
     
-    vider_buffer() # On ignore les appuis accidentels précédents
+    vider_buffer()
     
     while True:
         action_unitaire()
@@ -61,33 +64,34 @@ def action_servo(servo):
     servo.max()
     time.sleep(0.6)
 
-def action_stepper(stepper_pins, seq):
+def action_stepper(stepper_pins, seq, delai_ms):
+    """Effectue un cycle de pas avec le délai spécifié."""
     for step in seq:
         for i in range(4):
             stepper_pins[i].value(step[i])
-        time.sleep_ms(10)
+        time.sleep_ms(delai_ms)
 
-# --- PROGRAMME PRINCIPAL ---
+# --- INITIALISATIONS ---
+lcd = Grove_LCD_I2C()
+boussole = Boussole()
+adc = ADC(PIN_ADC)
+servo = ServoMoteur(PIN_SERVO, angle_min=50, angle_max=130)
+stepper_pins = [Pin(p, Pin.OUT) for p in PINS_STEPPER]
+seq = [[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
 
-def main():
-    # Initialisations
-    lcd = Grove_LCD_I2C()
-    boussole = Boussole()
-    adc = ADC(PIN_ADC)
-    servo = ServoMoteur(PIN_SERVO, angle_min=50, angle_max=130)
-    stepper_pins = [Pin(p, Pin.OUT) for p in PINS_STEPPER]
-    seq = [[1,0,0,0], [0,1,0,0], [0,0,1,0], [0,0,0,1]]
+# --- EXECUTION LINEAIRE DES BOUCLES ---
 
-    # Lancement des boucles
-    boucle_jusque_entree("BOUSSOLE", lambda: action_boussole(boussole, lcd))
-    boucle_jusque_entree("POTENTIOMETRE", lambda: action_adc(adc, lcd))
-    boucle_jusque_entree("SERVO", lambda: action_servo(servo))
-    boucle_jusque_entree("MOTEUR PAS-A-PAS", lambda: action_stepper(stepper_pins, seq))
+boucle_jusque_entree("BOUSSOLE", lambda: action_boussole(boussole, lcd))
+boucle_jusque_entree("POTENTIOMETRE", lambda: action_adc(adc, lcd))
+boucle_jusque_entree("SERVO", lambda: action_servo(servo))
 
-    # Nettoyage
-    for pin in stepper_pins: pin.value(0)
-    servo.desactiver()
-    print("\n--- TOUS LES TESTS SONT TERMINÉS ---")
+# Séquence PAP lente (250 ms)
+boucle_jusque_entree("MOTEUR PAP LENT (250ms)", lambda: action_stepper(stepper_pins, seq, 250))
 
-if __name__ == "__main__":
-    main()
+# Séquence PAP rapide (10 ms)
+boucle_jusque_entree("MOTEUR PAP RAPIDE (10ms)", lambda: action_stepper(stepper_pins, seq, 10))
+
+# --- NETTOYAGE FINAL ---
+for pin in stepper_pins: pin.value(0)
+servo.desactiver()
+print("\n--- TOUS LES TESTS SONT TERMINÉS ---")

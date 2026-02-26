@@ -1,4 +1,5 @@
-from fasapico import GroveUltrasonicRanger
+from fasapico import *
+from machine import *
 from time import *
 
 print("Here we go !")

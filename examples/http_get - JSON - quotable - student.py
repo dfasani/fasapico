@@ -11,7 +11,7 @@ print("Connected to WiFi (" +ip+")")
 #
 # 2. J'envoie une requete
 #
-urlDemandee = "https://api.quotable.io/random"
+urlDemandee = "https://bzh.dev.icam.school/quotable/random"
 print(urlDemandee)
 jsonData = get_json_from_url(urlDemandee, debug=True)
 

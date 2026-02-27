@@ -1,5 +1,6 @@
 from fasapico import *
 from time import *
+from machine import *
 
 boussoleGrove = Boussole()
 
@@ -182,5 +183,6 @@ while True:
         #3 - transmission de la valeur de commandeServo au safran (signal PWM pour servo entre 3000 et 7000)
 
         #servo.duty ...  (commandeServo)
+
 
 

@@ -51,7 +51,7 @@ def runStepper(nbDegres):
         for step in steps_sequence:         # pour chacune des etapes
                 for i in range(4):          # pour chacune des 4 broches (i de 0 à 3)
                     pins[i].value(step[i])  # maj PIN n° i
-                sleep_ms(5)                 # il faut attendre un peu pour laisser le temps au moteur de deplacer
+                sleep_ms(10)                 # il faut attendre un peu pour laisser le temps au moteur de deplacer
     
 
 
@@ -182,3 +182,4 @@ while True:
         #3 - transmission de la valeur de commandeServo au safran (signal PWM pour servo entre 3000 et 7000)
 
         #servo.duty ...  (commandeServo)
+

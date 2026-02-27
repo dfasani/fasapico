@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 from fasapico import *
 from time import *
+from machine import *
 
 # Initialisation du compas numérique
 # Valeur par défaut sda=0, scl=1

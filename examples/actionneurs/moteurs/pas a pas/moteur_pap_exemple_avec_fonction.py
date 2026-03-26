@@ -1,4 +1,4 @@
-from fasapico import Stepper
+from fasapico import *
 from time import sleep_ms
 
 #################################

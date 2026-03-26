@@ -6,7 +6,7 @@ print(f"Connecté au WiFi avec l'ip {ip}")
 
 # Callback : fonction appelée automatiquement à chaque réception d'un message
 def on_message_callback(topic, msg):
-    print(f"Message reçu >> Topic : {topic} | Contenu : {msg}")
+    print(f"Message reçu >> Topic : '{topic}' | Contenu : '{msg}'")
 
 # Initialisation du client MQTT (remplacer `tonPrenomTonNomIci` par un identifiant unique)
 clientMQTT = MQTTClientSimple(client_id="tonPrenomTonNomIci", server="mqtt.dev.icam.school")

@@ -6,7 +6,7 @@ ip = connect_to_wifi(ssid = "icam_iot" , password = "Summ3#C@mp2022")
 print(f"Connecté au WiFi avec l'ip {ip}")
 
 def on_message_callback(topic,msg):
-    print(f"Message reçu >> Topic : {topic} | Contenu : {msg}")
+    print(f"Message reçu >> Topic : '{topic}' | Contenu : '{msg}'")
 
 
 #merci de remplacer "monNomMonPrenom" 

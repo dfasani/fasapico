@@ -523,6 +523,16 @@ class ClientMQTT:
              except Exception as e:
                  error(f"Erreur check_msg: {e}")
 
+    def wait_msg(self):
+        """
+        Attend de manière bloquante les messages entrants.
+        """
+        if self.client:
+             try:
+                 self.client.wait_msg()
+             except Exception as e:
+                 error(f"Erreur wait_msg: {e}")
+
     def subscribe(self, topic):
         """S'abonne à un topic supplémentaire."""
         if self.client:

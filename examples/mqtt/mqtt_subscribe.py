@@ -3,7 +3,7 @@ from fasapico import *
 
 # Callback : fonction appelée automatiquement à chaque réception d'un message
 def on_message_callback(topic, msg):
-    print(f"Message reçu >> Topic : {topic} | Contenu : {msg}")
+    print(f"Message reçu >> Topic : '{topic}' | Contenu : '{msg}'")
 
 # Initialisation du client MQTT (gère aussi la connexion WiFi et la résilience)
 clientMQTT = ClientMQTT(
@@ -23,9 +23,6 @@ print("En attente des messages... Appuyez sur Ctrl+C pour quitter.")
 
 # Boucle principale pour attendre les messages
 while True:
-    # check_msg() vérifie la boîte aux lettres de messages (non bloquant)
-    clientMQTT.check_msg()
-    time.sleep(0.1)
-    
-    # n'ajoute pas de code ici stp --> c'est la fonction on_message_callback() qu'on va completer
-    # si tu n'as pas pris en compte ma consigne et que tu m'appelle je vais doubler tes frais de vie :)
+    clientMQTT.wait_msg()
+    #n'ajoute pas de code ici stp --> c'est la fonction on_message_callback() qu'on va completer
+    #si tu n'as pas pris en compte ma consigne et que tu m'appelle je vais doubler tes frais de vie :)

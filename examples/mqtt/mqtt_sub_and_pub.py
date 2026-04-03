@@ -2,7 +2,7 @@ from machine import *
 from fasapico import *
 
 def on_message_callback(topic,msg):
-    print(f"Message reçu >> Topic : {topic} | Contenu : {msg}")
+    print(f"Message reçu >> Topic : '{topic}' | Contenu : '{msg}'")
 
 clientMQTT = ClientMQTT(
     broker="mqtt.dev.icam.school",

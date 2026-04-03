@@ -531,7 +531,7 @@ class ClientMQTT:
              try:
                  self.client.wait_msg()
              except Exception as e:
-                 error(f"Erreur wait_msg: {e}")
+                 error(f"Erreur wait_msg: {e}") 
 
     def subscribe(self, topic):
         """S'abonne à un topic supplémentaire."""

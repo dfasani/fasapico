@@ -145,8 +145,8 @@ class MQTTException(Exception):
 class MQTTClientSimple:
     def __init__(
         self,
-        client_id,
-        server,
+        client_id=None,
+        server=None,
         port=0,
         user=None,
         password=None,
@@ -160,6 +160,12 @@ class MQTTClientSimple:
                 port = int(port)
             except ValueError:
                 raise MQTTException("Invalid port value: must be an integer or numeric string")
+
+        if server is None:
+            raise ValueError("server must be provided")
+
+        if client_id is None:
+            client_id = get_mac_address()
 
         if port == 0:
             port = 8883 if ssl else 1883
@@ -466,7 +472,7 @@ def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback
     return client
 
 class ClientMQTT:
-    def __init__(self, broker, port, client_id, topic_cmd=None, callback=None, 
+    def __init__(self, broker, port=0, client_id=None, topic_cmd=None, callback=None, 
                  wifi_ssid=None, wifi_password=None):
         self.broker = broker
         self.port = port

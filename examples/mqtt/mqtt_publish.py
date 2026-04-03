@@ -4,19 +4,14 @@
 
 from fasapico import *
 
-ip = connect_to_wifi(ssid = "icam_iot" , password = "Summ3#C@mp2022")
-print(f"Connecté au WiFi avec l'ip {ip}")
+# ClientMQTT prend en charge la connexion WiFi et MQTT
+clientMQTT = ClientMQTT(
+    broker="mqtt.dev.icam.school",
+    wifi_ssid="icam_iot",
+    wifi_password="Summ3#C@mp2022"
+)
+clientMQTT.check_connection()
 
-
-#												#
-#	A TOI DE REMPLACER "tonPrenomTonNomIci"		#
-#	SINON ON SE FAIT JETER PAR LE SERVEUR !		#
-#												#
-
-#merci de remplacer "tonPrenomTonNomIci" , sinon on va se faire jeter par le serveur
-clientMQTT = MQTTClientSimple(client_id="tonPrenomTonNomIci", server="mqtt.dev.icam.school")
-clientMQTT.connect()
-clientMQTT.publish(topic="bzh/iot/demo/maquette/a3" , msg="bientot le WE !") #tu peux changer de topic et de msg !
-clientMQTT.disconnect()
+clientMQTT.publish("bzh/iot/demo/maquette/a3", "bientot le WE !") # tu peux changer de topic et de msg !
 
 print("deja fini !!!")

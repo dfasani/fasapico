@@ -1,18 +1,17 @@
 from machine import *
 from fasapico import *
 
-# Connexion au WiFi
-ip = connect_to_wifi(ssid = "icam_iot" , password = "Summ3#C@mp2022")
-print(f"Connecté au WiFi avec l'ip {ip}")
-
 def on_message_callback(topic,msg):
     print(f"Message reçu >> Topic : {topic} | Contenu : {msg}")
 
-
-#merci de remplacer "monNomMonPrenom" 
-clientMQTT = MQTTClientSimple(client_id="monNomMonPrenom", server="mqtt.dev.icam.school")
-clientMQTT.set_callback(on_message_callback)  #que doit-on faire à reception d'un message ? Appeler la fonction on_message_callback()
-clientMQTT.connect()
+clientMQTT = ClientMQTT(
+    broker="mqtt.dev.icam.school",
+    wifi_ssid="icam_iot",
+    wifi_password="Summ3#C@mp2022",
+    callback=on_message_callback
+)
+# La méthode check_connection se charge aussi de nous connecter au WiFi par défaut
+clientMQTT.check_connection()
 
 print()
 print("Je m'abonne a quel topic ?")

@@ -501,13 +501,14 @@ class ClientMQTT:
         )
         return self.client
     
-    def publish(self, topic, message):
+    def publish(self, topic, message, qos=0, retain=False):
         """
         Publie un message si connecté.
+        Exemple avec retain: client.publish("mon/topic", "message", retain=True)
         """
         if self.client:
             try:
-                self.client.publish(topic, str(message))
+                self.client.publish(topic, str(message), qos=qos, retain=retain)
             except Exception as e:
                 error(f"Erreur publish {topic}: {e}")
         else:

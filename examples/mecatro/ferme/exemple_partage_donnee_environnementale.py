@@ -1,130 +1,85 @@
 # main.py
-# Exemple MQTT v2 avec double Callback (MQTT + Timer temporel de 5s) pour Pico W
+# Exemple de publication MQTT au format JSON pour Raspberry Pi Pico W
+# Cadencement non-bloquant (ticks_ms) et simulation directe de variation de capteur
 
 import time
 import json
-from machine import Timer  # Importation du module de gestion des Timers
+import random  # Module pour générer du hasard
 from fasapico import *
 
 # ==========================================
-# CONFIGURATION
+# CONFIGURATION DU PROJET & MQTT
 # ==========================================
-CLIENT_ID = "JeanLouisSerreTech"
+CLIENT_ID = "JeanLouisSerreTech" 
 BROKER_SERVER = "mqtt.dev.icam.school"
+TOPIC = "bzh/mecatro/env/pression_atmospherique"
 
-# Topics
-TOPIC_PUB = "bzh/mecatro/env/pression_atmospherique"
-
-# Variable globale (Drapeau / Flag) pour le Timer
-publier_maintenant = False
+# Intervalle de temps souhaité entre chaque envoi (5000 ms = 5 secondes)
+INTERVALLE_MS = 5000 
 
 # ==========================================
-# 1. CALLBACK DU TIMER (Déclenché toutes les 5s)
-# ==========================================
-def declencher_publication(t):
-    """
-    Cette fonction est appelée automatiquement par le Timer toutes les 5 secondes.
-    Elle doit être extrêmement rapide, donc on ne fait que lever un drapeau.
-    Le paramètre 't' est obligatoire (il reçoit l'objet Timer lui-même).
-    """
-    global publier_maintenant
-    publier_maintenant = True
-
-# ==========================================
-# 2. CALLBACK MQTT (Réception de messages)
-# ==========================================
-def sur_reception_message(topic, msg):
-    """
-    Appelé automatiquement dès qu'un message arrive sur TOPIC_SUB.
-    """
-    topic_recu = topic.decode('utf-8')
-    message_recu = msg.decode('utf-8')
-    
-    print(f"\n[CALLBACK MQTT] Message reçu sur {topic_recu} !")
-    print(f"[CALLBACK MQTT] Contenu : {message_recu}")
-    
-    try:
-        commande = json.loads(message_recu)
-        if "led" in commande:
-            if commande["led"] == "ON":
-                print("-> Action : Allumer la LED de la Pico")
-            elif commande["led"] == "OFF":
-                print("-> Action : Éteindre la LED de la Pico")
-    except ValueError:
-        print(f"[CALLBACK MQTT] Message brut : {message_recu}")
-
-# ==========================================
-# CONNEXION WI-FI ET CONFIGURATION MQTT
+# 1. CONNEXION WI-FI & BROKER MQTT
 # ==========================================
 print("Connexion au réseau Wi-Fi...")
-ip = connect_to_wifi()
-print(f"Wi-Fi connecté ! IP : {ip}")
+ip = connect_to_wifi()  # Identifiants par défaut gérés par la bibliothèque fasapico
+print(f"Wi-Fi connecté ! Adresse IP : {ip}")
 
 print(f"Connexion au Broker : {BROKER_SERVER}...")
 clientMQTT = MQTTClientSimple(client_id=CLIENT_ID, server=BROKER_SERVER, ssl=True)
 
-# Liaison du callback MQTT (avant connexion)
-clientMQTT.set_callback(sur_reception_message)
-
 try:
     clientMQTT.connect()
-    print("Connecté au broker MQTT.")
-    clientMQTT.subscribe(topic=TOPIC_SUB)
-    print(f"Abonné au topic : {TOPIC_SUB}")
+    print("Connecté avec succès au broker MQTT.")
 except Exception as e:
-    print("Erreur d'initialisation MQTT :", e)
+    print("Erreur de connexion initiale au broker MQTT :", e)
 
 # ==========================================
-# 3. INITIALISATION DU TIMER TEMPOREL (5 sec)
+# 2. INITIALISATION DU REPERE TEMPOREL
 # ==========================================
-# On crée un timer virtuel (-1)
-mon_timer = Timer(-1)
+# Au démarrage, on enregistre le premier repère en millisecondes
+dernier_envoi_ms = time.ticks_ms()
 
-# Configuration : 5000 ms (5 secondes), répétitif (PERIODIC)
-mon_timer.init(
-    period=5000, 
-    mode=Timer.PERIODIC, 
-    callback=declencher_publication
-)
-print("Timer temporel démarré (cadence : 5000ms / 0.2 Hz).")
+print("Démarrage de la boucle de publication active...")
 
 # ==========================================
-# BOUCLE PRINCIPALE (Ultra-légère et réactive)
+# BOUCLE PRINCIPALE NON-BLOQUANTE
 # ==========================================
-print("En attente de messages et prêt à publier...")
-
 while True:
     try:
-        # Écoute en continu du broker MQTT (s'exécute quasi instantanément)
-        clientMQTT.check_msg()
+        # À chaque passage de boucle, on regarde quelle "heure" il est sur la Pico
+        temps_courant_ms = time.ticks_ms()
         
-        # Si le Timer a levé le drapeau (toutes les 5s)
-        if publier_maintenant:
-            # 1. On baisse immédiatement le drapeau
-            publier_maintenant = False
+        # On calcule l'écart entre le temps courant et le moment du dernier envoi.
+        if time.ticks_diff(temps_courant_ms, dernier_envoi_ms) >= INTERVALLE_MS:
             
-            # 2. On prépare nos données JSON
-            valeur_pression = 1025  # Simulation capteur
+            # 1. On met à jour notre repère pour le prochain envoi
+            dernier_envoi_ms = temps_courant_ms  
+            
+            # 2. Simulation de la mesure en une seule ligne de code
+            valeur_mesuree = 1025 + random.randint(-3, 3)
+            
+            # 3. Structuration de la donnée au format JSON Mechatro BZH V2
             donnees_capteur = {
-                "valeur": valeur_pression,
+                "valeur": valeur_mesuree,
                 "unite": "hPa",
-                "type": "pression atmosphérique"
+                "type": "int"  # Type informatique de la donnée
             }
+            
+            # 4. Conversion en chaîne de caractères JSON
             payload_json = json.dumps(donnees_capteur)
             
-            # 3. On publie sur le réseau
-            clientMQTT.publish(topic=TOPIC_PUB, msg=payload_json, retain=True)
-            print(f"[TIMER EVENT] Publication effectuée : {payload_json}")
+            # 5. Publication sur le broker avec persistance (retain=True, plus sympa pour les copains ;o)
+            clientMQTT.publish(topic=TOPIC, msg=payload_json, retain=True)
+            print(f"Données publiées sur {TOPIC} : {payload_json}")
             
     except Exception as e:
-        print(f"Erreur détectée : {e}")
+        print(f"Une erreur est survenue : {e}")
         print("Tentative de reconnexion...")
         try:
             connect_to_wifi()
             clientMQTT.connect()
-            clientMQTT.subscribe(topic=TOPIC_SUB)
         except Exception as recon_err:
-            print("Échec de la reconnexion :", recon_err)
+            print(f"Échec de la reconnexion automatique : {recon_err}")
             
-    # Très courte pause de sécurité pour soulager le processeur
-    time.sleep(0.05)
+    # Très courte pause (50 ms) pour soulager le processeur de la Pico
+    time.sleep_ms(50)

@@ -16,8 +16,8 @@ except Exception as e:
 GITHUB_API = "https://api.github.com/repos/dfasani/fasapico/contents/fasapico"
 
 # Default WiFi credentials (override with secrets.py)
-SSID = "icam_iot"
-PASSWORD = "Summ3#C@mp2022"
+SSID = "Icam_IOT"
+PASSWORD = "V@nn3s2026"
 
 # Optional: set a GitHub Personal Access Token here to avoid API rate limits
 # Create a token at https://github.com/settings/tokens with at least `public_repo` scope

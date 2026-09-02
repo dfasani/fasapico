@@ -1,29 +1,38 @@
-# main.py
-# Exemple de publication MQTT au format JSON pour Raspberry Pi Pico W
-# Cadencement non-bloquant (ticks_ms) et simulation directe de variation de capteur
+# exemple_partage_donnee_environnementale.py
+# Exemple de publication périodique d'une mesure d'ambiance partagée
+# Format JSON normalisé (4 champs), horodatage NTP, retain=True et boucle non-bloquante
 
 import time
 import json
-import random  # Module pour générer du hasard
+import random
 from fasapico import *
 
 # ==========================================
 # CONFIGURATION DU PROJET & MQTT
 # ==========================================
-CLIENT_ID = "JeanLouisSerreTech" 
+CLIENT_ID = "StationMeteoPico"
 BROKER_SERVER = "mqtt.dev.icam.school"
-TOPIC = "bzh/mecatro/env/pression_atmospherique"
 
-# Intervalle de temps souhaité entre chaque envoi (5000 ms = 5 secondes)
+# Structure obligatoire : bzh/mecatro/ambiance/<NOM_PROJET>/<GRANDEUR>
+# Grandeurs autorisées : temperature, humidite, pression, luminosite, co2, qualite_air, bruit, pluvio, vent_vitesse
+TOPIC = "bzh/mecatro/ambiance/station_meteo/pression"
+
+# Intervalle de publication (entre 5 000 ms et 10 000 ms, soit 0.1 Hz à 0.2 Hz)
 INTERVALLE_MS = 5000 
 
 # ==========================================
-# 1. CONNEXION WI-FI & BROKER MQTT
+# 1. CONNEXION WI-FI & SYNCHRONISATION NTP
 # ==========================================
 print("Connexion au réseau Wi-Fi...")
-ip = connect_to_wifi()  # Identifiants par défaut gérés par la bibliothèque fasapico
+ip = connect_to_wifi()
 print(f"Wi-Fi connecté ! Adresse IP : {ip}")
 
+# Synchronisation de l'heure UTC via NTP pour l'horodatage des mesures
+sync_time()
+
+# ==========================================
+# 2. CONNEXION AU BROKER MQTT
+# ==========================================
 print(f"Connexion au Broker : {BROKER_SERVER}...")
 clientMQTT = MQTTClientSimple(client_id=CLIENT_ID, server=BROKER_SERVER, ssl=True)
 
@@ -34,52 +43,48 @@ except Exception as e:
     print("Erreur de connexion initiale au broker MQTT :", e)
 
 # ==========================================
-# 2. INITIALISATION DU REPERE TEMPOREL
+# 3. INITIALISATION DU REPÈRE TEMPOREL
 # ==========================================
-# Au démarrage, on enregistre le premier repère en millisecondes
 dernier_envoi_ms = time.ticks_ms()
-
-print("Démarrage de la boucle de publication active...")
+print("Démarrage de la boucle de publication d'ambiance...")
 
 # ==========================================
 # BOUCLE PRINCIPALE NON-BLOQUANTE
 # ==========================================
 while True:
     try:
-        # À chaque passage de boucle, on regarde quelle "heure" il est sur la Pico
         temps_courant_ms = time.ticks_ms()
         
-        # On calcule l'écart entre le temps courant et le moment du dernier envoi.
+        # Vérification si l'intervalle est écoulé (gestion sûre des millisecondes)
         if time.ticks_diff(temps_courant_ms, dernier_envoi_ms) >= INTERVALLE_MS:
-            
-            # 1. On met à jour notre repère pour le prochain envoi
             dernier_envoi_ms = temps_courant_ms  
             
-            # 2. Simulation de la mesure en une seule ligne de code
-            valeur_mesuree = 1025 + random.randint(-3, 3)
+            # Simulation d'une valeur de capteur (ex: baromètre BMP280 en hPa)
+            valeur_mesuree = 1013 + random.randint(-4, 4)
             
-            # 3. Structuration de la donnée au format JSON Mechatro BZH V2
+            # Structuration du message au format normalisé Mechatro Ferme (4 champs obligatoires)
             donnees_capteur = {
                 "valeur": valeur_mesuree,
                 "unite": "hPa",
-                "type": "int"  # Type informatique de la donnée
+                "type": "int",
+                "dateheure": get_iso_timestamp()  # Horodatage ISO 8601 UTC
             }
             
-            # 4. Conversion en chaîne de caractères JSON
             payload_json = json.dumps(donnees_capteur)
             
-            # 5. Publication sur le broker avec persistance (retain=True, plus sympa pour les copains ;o)
+            # Publication avec retain=True obligatoire pour conserver la dernière valeur pour la communauté
             clientMQTT.publish(topic=TOPIC, msg=payload_json, retain=True)
-            print(f"Données publiées sur {TOPIC} : {payload_json}")
+            print(f"Données d'ambiance publiées sur {TOPIC} : {payload_json}")
             
     except Exception as e:
         print(f"Une erreur est survenue : {e}")
         print("Tentative de reconnexion...")
         try:
             connect_to_wifi()
+            sync_time()
             clientMQTT.connect()
         except Exception as recon_err:
             print(f"Échec de la reconnexion automatique : {recon_err}")
             
-    # Très courte pause (50 ms) pour soulager le processeur de la Pico
+    # Pause courte pour libérer du temps CPU
     time.sleep_ms(50)

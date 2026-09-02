@@ -135,6 +135,18 @@ def sync_time():
         error(f"Echec synchronisation NTP: {e}")
         return False
 
+def get_iso_timestamp():
+    """
+    Retourne l'horodatage courant au format ISO 8601 UTC (ex: '2026-08-28T15:21:00Z').
+    Nécessite d'avoir synchronisé l'heure au préalable via sync_time().
+    """
+    try:
+        t = time.gmtime()
+        return "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}Z".format(t[0], t[1], t[2], t[3], t[4], t[5])
+    except Exception as e:
+        error(f"Erreur formatage date ISO: {e}")
+        return "1970-01-01T00:00:00Z"
+
 # ==========================================
 # MQTT Classes
 # ==========================================

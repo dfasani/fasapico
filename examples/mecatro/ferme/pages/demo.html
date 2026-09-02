@@ -120,15 +120,49 @@
       </div>
     </section>
 
-    <!-- Console de logs & Simulateur de test -->
-    <section class="bg-slate-900/80 border border-slate-800 p-5 rounded-3xl space-y-3 shadow-lg">
-      <div class="flex items-center justify-between">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Journal d'activité & Test</h2>
-        <button onclick="simulerMesurePico()" class="text-[11px] font-semibold text-emerald-400 hover:underline">
-          🧪 Simuler une trame Pico
+    <!-- 3 GROS BOUTONS : SIMULATION ENVOI PAR LE PICO W -->
+    <section class="bg-slate-900/80 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-lg">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">⚡ Simuler un envoi Pico W</h2>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+        <!-- Bouton 1 : Capteur privé Pico -->
+        <button onclick="simulerCapteurPrive()"
+                class="flex flex-col items-center justify-between p-5 rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-800 hover:from-emerald-600 hover:to-teal-700 text-white font-bold shadow-lg shadow-emerald-800/30 active:scale-95 transition-all text-center min-h-[140px]">
+          <span class="text-3xl">🐾</span>
+          <span class="text-sm">Capteur privé Pico</span>
+          <span class="font-mono text-[10px] font-normal text-emerald-200 bg-emerald-950/60 border border-emerald-800/60 px-2 py-1 rounded-lg w-full truncate">
+            bzh/mecatro/prive/miamconnect/capteurs/poids
+          </span>
         </button>
+
+        <!-- Bouton 2 : Dashboard public -->
+        <button onclick="simulerDashboard()"
+                class="flex flex-col items-center justify-between p-5 rounded-2xl bg-gradient-to-br from-blue-700 to-indigo-800 hover:from-blue-600 hover:to-indigo-700 text-white font-bold shadow-lg shadow-blue-800/30 active:scale-95 transition-all text-center min-h-[140px]">
+          <span class="text-3xl">🖥️</span>
+          <span class="text-sm">Dashboard public</span>
+          <span class="font-mono text-[10px] font-normal text-blue-200 bg-blue-950/60 border border-blue-800/60 px-2 py-1 rounded-lg w-full truncate">
+            bzh/mecatro/dashboard/miamconnect/eau
+          </span>
+        </button>
+
+        <!-- Bouton 3 : Ambiance partagée -->
+        <button onclick="simulerAmbiance()"
+                class="flex flex-col items-center justify-between p-5 rounded-2xl bg-gradient-to-br from-amber-700 to-orange-800 hover:from-amber-600 hover:to-orange-700 text-white font-bold shadow-lg shadow-amber-800/30 active:scale-95 transition-all text-center min-h-[140px]">
+          <span class="text-3xl">🌡️</span>
+          <span class="text-sm">Capteur d'ambiance</span>
+          <span class="font-mono text-[10px] font-normal text-amber-200 bg-amber-950/60 border border-amber-800/60 px-2 py-1 rounded-lg w-full truncate">
+            bzh/mecatro/ambiance/station_meteo/pression
+          </span>
+        </button>
+
       </div>
-      <div id="logConsole" class="p-3 bg-slate-950 border border-slate-800 rounded-2xl h-28 overflow-y-auto font-mono text-[11px] text-slate-400 space-y-1">
+    </section>
+
+    <!-- Console de logs -->
+    <section class="bg-slate-900/80 border border-slate-800 p-5 rounded-3xl space-y-3 shadow-lg">
+      <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Journal d'activité</h2>
+      <div id="logConsole" class="p-3 bg-slate-950 border border-slate-800 rounded-2xl h-32 overflow-y-auto font-mono text-[11px] text-slate-400 space-y-1">
         <div>[Système] Prêt. Cliquez sur "Se connecter".</div>
       </div>
     </section>
@@ -146,6 +180,18 @@
       line.textContent = `[${time}] ${msg}`;
       consoleEl.appendChild(line);
       consoleEl.scrollTop = consoleEl.scrollHeight;
+    }
+
+    function getIsoTimestamp() {
+      return new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+    }
+
+    function checkConnected() {
+      if (!client || !client.connected) {
+        alert('Veuillez d\'abord vous connecter au broker MQTT !');
+        return false;
+      }
+      return true;
     }
 
     function toggleConnect() {
@@ -180,7 +226,7 @@
 
           log('✓ Connecté au broker MQTT !');
 
-          // Souscription aux capteurs du projet (format privé normalisé)
+          // Souscription aux capteurs privés de la maquette
           const topicCapteurs = `bzh/mecatro/prive/${PROJET}/capteurs/#`;
           client.subscribe(topicCapteurs, (err) => {
             if (!err) log(`Abonné à : ${topicCapteurs}`);
@@ -192,7 +238,7 @@
           log(`📥 Reçu [${topic}] : ${payload}`);
 
           const parts = topic.split('/');
-          const variable = parts[parts.length - 1]; // ex: poids, eau, presence
+          const variable = parts[parts.length - 1];
           const time = new Date().toLocaleTimeString();
 
           if (variable === 'poids') {
@@ -230,23 +276,53 @@
     }
 
     function envoyerCommande(actionneur, valeur) {
-      if (!client || !client.connected) {
-        alert('Veuillez d\'abord vous connecter au broker MQTT !');
-        return;
-      }
+      if (!checkConnected()) return;
       const topic = `bzh/mecatro/prive/${PROJET}/actionneurs/${actionneur}`;
       client.publish(topic, valeur);
       log(`📤 Publié [${topic}] : ${valeur}`);
     }
 
-    function simulerMesurePico() {
-      if (!client || !client.connected) {
-        alert('Connectez-vous d\'abord pour tester la simulation !');
-        return;
-      }
-      // Simule une mesure envoyée par le Pico
-      const fauxPoids = Math.floor(Math.random() * 200 + 50);
-      client.publish(`bzh/mecatro/prive/${PROJET}/capteurs/poids`, String(fauxPoids));
+    // 1. Simuler l'envoi d'un capteur privé par le Pico W
+    function simulerCapteurPrive() {
+      if (!checkConnected()) return;
+      const topic = `bzh/mecatro/prive/${PROJET}/capteurs/poids`;
+      const fauxPoids = Math.floor(Math.random() * 80 + 100); // Entre 100 et 180g
+      client.publish(topic, String(fauxPoids));
+      log(`🐾 Pico Privé [${topic}] : ${fauxPoids}`);
+    }
+
+    // 2. Simuler l'envoi vers le Dashboard public par le Pico W
+    function simulerDashboard() {
+      if (!checkConnected()) return;
+      const topic = `bzh/mecatro/dashboard/miamconnect/eau`;
+      // Valeur qui varie légèrement autour de 12.4
+      const val = parseFloat((12.0 + Math.random() * 1.5).toFixed(1));
+      const payload = {
+        valeur: val,
+        unite: "cl",
+        type: "float",
+        dateheure: getIsoTimestamp()
+      };
+      const msg = JSON.stringify(payload);
+      client.publish(topic, msg, { retain: false });
+      log(`🖥️ Dashboard [${topic}] : ${msg}`);
+    }
+
+    // 3. Simuler l'envoi d'un capteur d'ambiance par le Pico W
+    function simulerAmbiance() {
+      if (!checkConnected()) return;
+      const topic = `bzh/mecatro/ambiance/station_meteo/pression`;
+      // Pression qui varie légèrement autour de 1013 hPa
+      const val = 1013 + Math.floor(Math.random() * 8 - 4);
+      const payload = {
+        valeur: val,
+        unite: "hPa",
+        type: "int",
+        dateheure: getIsoTimestamp()
+      };
+      const msg = JSON.stringify(payload);
+      client.publish(topic, msg, { retain: true, qos: 0 });
+      log(`🌡️ Ambiance (retain) [${topic}] : ${msg}`);
     }
   </script>
 </body>

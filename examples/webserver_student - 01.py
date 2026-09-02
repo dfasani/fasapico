@@ -1,7 +1,7 @@
 from phew import server, connect_to_wifi
 
-WIFI_SSID = "icam_iot"
-WIFI_PASSWORD = "Summ3#C@mp2022"
+WIFI_SSID = "Icam_IOT"
+WIFI_PASSWORD = "V@nn3s2026"
 
 ip = connect_to_wifi(WIFI_SSID, WIFI_PASSWORD)
 print("Received IP adress",ip)

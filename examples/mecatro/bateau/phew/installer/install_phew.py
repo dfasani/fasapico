@@ -55,7 +55,7 @@ def connect_to_wifi(ssid, password, timeout_seconds=30, debug=False):
 # --- Connexion au WiFi ---
 # --> Modifier le mot de passe si nécessaire
 print("Connexion au réseau WiFi...")
-ip = connect_to_wifi(ssid = "icam_iot", password = "Summ3#C@mp2022")
+ip = connect_to_wifi(ssid = "Icam_IOT", password = "V@nn3s2026")
 
 print("\nConnecté ! Adresse IP :", ip)
 

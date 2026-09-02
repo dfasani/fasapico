@@ -11,8 +11,8 @@ from .utils import warn, error, info, debug, decode_bytes
 # ==========================================
 # WiFi Credentials (default)
 # ==========================================
-DEFAULT_SSID = "icam_iot"
-DEFAULT_PASSWORD = "Summ3#C@mp2022"
+DEFAULT_SSID = "Icam_IOT"
+DEFAULT_PASSWORD = "V@nn3s2026"
 
 # ==========================================
 # Network Utilities

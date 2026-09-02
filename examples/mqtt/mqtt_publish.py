@@ -7,8 +7,8 @@ from fasapico import *
 # ClientMQTT prend en charge la connexion WiFi et MQTT
 clientMQTT = ClientMQTT(
     broker="mqtt.dev.icam.school",
-    wifi_ssid="icam_iot",
-    wifi_password="Summ3#C@mp2022"
+    wifi_ssid="Icam_IOT",
+    wifi_password="V@nn3s2026"
 )
 clientMQTT.check_connection()
 

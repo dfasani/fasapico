@@ -5,7 +5,7 @@ from fasapico import *
 #
 
 #change si necessaire
-ip = connect_to_wifi(ssid = "icam_iot", password = "Summ3#C@mp2022")
+ip = connect_to_wifi(ssid = "Icam_IOT", password = "V@nn3s2026")
 print("Connected to WiFi (" +ip+")")
 
 #

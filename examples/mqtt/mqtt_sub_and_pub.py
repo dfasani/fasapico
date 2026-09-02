@@ -6,8 +6,8 @@ def on_message_callback(topic,msg):
 
 clientMQTT = ClientMQTT(
     broker="mqtt.dev.icam.school",
-    wifi_ssid="icam_iot",
-    wifi_password="Summ3#C@mp2022",
+    wifi_ssid="Icam_IOT",
+    wifi_password="V@nn3s2026",
     callback=on_message_callback
 )
 # La méthode check_connection se charge aussi de nous connecter au WiFi par défaut

@@ -53,7 +53,7 @@ L'autopilote :
 ## 🧪 Exemple d'utilisation
 
 1. Flasher le script sur le Raspberry Pi Pico W.
-2. Le dispositif se connecte automatiquement au WiFi `icam_iot` avec le mot de passe défini.
+2. Le dispositif se connecte automatiquement au WiFi `Icam_IOT` avec le mot de passe défini.
 3. Connecter un client MQTT (ex. MQTT Explorer) au broker `broker.emqx.io`.
 4. Publier des messages sur les topics `bateau/safran`, `bateau/vitesse` ou `bateau/autopilote` pour contrôler le bateau.
 5. Consulter les topics `bateau/gps`, `bateau/cap` pour recevoir les données simulées.

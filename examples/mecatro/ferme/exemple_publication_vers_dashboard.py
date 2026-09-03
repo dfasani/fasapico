@@ -6,23 +6,16 @@ import json
 from fasapico import *
 
 # ==========================================
-# 1. CONNEXION WI-FI & SYNCHRONISATION NTP
+# 1. SYNCHRONISATION HORLOGE (NTP)
 # ==========================================
-print("Connexion au réseau Wi-Fi...")
-ip = connect_to_wifi()
-print(f"Wi-Fi connecté ! Adresse IP : {ip}")
-
-# Synchronisation de l'horloge interne avec le serveur de temps NTP (indispensable pour l'horodatage)
+# Synchronisation de l'horloge interne (connexion Wi-Fi automatique)
 sync_time()
 
 # ==========================================
 # 2. CONNEXION AU BROKER MQTT
 # ==========================================
-CLIENT_ID = "monPrenomMonNom"  # Remplace par ton prénom/nom ou nom de projet
-BROKER_SERVER = "mqtt.dev.icam.school"
-
-print(f"Connexion au Broker : {BROKER_SERVER}...")
-clientMQTT = MQTTClientSimple(client_id=CLIENT_ID, server=BROKER_SERVER, ssl=True)
+clientMQTT = MQTTClientSimple()
+print(f"Connexion au Broker : {clientMQTT.server} (ID: {clientMQTT.client_id})...")
 clientMQTT.connect()
 print("Connecté au broker MQTT.")
 

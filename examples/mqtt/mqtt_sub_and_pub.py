@@ -5,13 +5,8 @@ def on_message_callback(topic,msg):
     print(f"Message reçu >> Topic : '{topic}' | Contenu : '{msg}'")
 
 clientMQTT = ClientMQTT(
-    broker="mqtt.dev.icam.school",
-    wifi_ssid="Icam_IOT",
-    wifi_password="V@nn3s2026",
     callback=on_message_callback
 )
-# La méthode check_connection se charge aussi de nous connecter au WiFi par défaut
-clientMQTT.check_connection()
 
 print()
 print("Je m'abonne a quel topic ?")

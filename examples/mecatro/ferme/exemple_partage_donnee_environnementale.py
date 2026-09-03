@@ -7,12 +7,6 @@ import json
 import random
 from fasapico import *
 
-# ==========================================
-# CONFIGURATION DU PROJET & MQTT
-# ==========================================
-CLIENT_ID = "StationMeteoPico"
-BROKER_SERVER = "mqtt.dev.icam.school"
-
 # Structure obligatoire : bzh/mecatro/ambiance/<NOM_PROJET>/<GRANDEUR>
 # Grandeurs autorisées : temperature, humidite, pression, luminosite, co2, qualite_air, bruit, pluvio, vent_vitesse
 TOPIC = "bzh/mecatro/ambiance/station_meteo/pression"
@@ -21,20 +15,16 @@ TOPIC = "bzh/mecatro/ambiance/station_meteo/pression"
 INTERVALLE_MS = 5000 
 
 # ==========================================
-# 1. CONNEXION WI-FI & SYNCHRONISATION NTP
+# 1. SYNCHRONISATION HORLOGE (NTP)
 # ==========================================
-print("Connexion au réseau Wi-Fi...")
-ip = connect_to_wifi()
-print(f"Wi-Fi connecté ! Adresse IP : {ip}")
-
-# Synchronisation de l'heure UTC via NTP pour l'horodatage des mesures
+# Synchronisation de l'heure UTC via NTP (connexion Wi-Fi automatique)
 sync_time()
 
 # ==========================================
 # 2. CONNEXION AU BROKER MQTT
 # ==========================================
-print(f"Connexion au Broker : {BROKER_SERVER}...")
-clientMQTT = MQTTClientSimple(client_id=CLIENT_ID, server=BROKER_SERVER, ssl=True)
+clientMQTT = MQTTClientSimple()
+print(f"Connexion au Broker : {clientMQTT.server} (ID: {clientMQTT.client_id})...")
 
 try:
     clientMQTT.connect()

@@ -13,6 +13,7 @@ from .utils import warn, error, info, debug, decode_bytes
 # ==========================================
 DEFAULT_SSID = "Icam_IOT"
 DEFAULT_PASSWORD = "V@nn3s2026"
+DEFAULT_BROKER = "mqtt.dev.icam.school"
 
 # ==========================================
 # Network Utilities
@@ -127,6 +128,8 @@ def sync_time():
     """Synchronise l'horloge interne avec un serveur NTP."""
     import ntptime
     try:
+        if not is_connected_to_wifi():
+            connect_to_wifi()
         info("Synchronisation de l'heure via NTP...")
         ntptime.settime()
         info("Heure synchronisée.")
@@ -163,7 +166,7 @@ class MQTTClientSimple:
         user=None,
         password=None,
         keepalive=0,
-        ssl=False,
+        ssl=True,
         ssl_params={},
     ):
         # Ensure port is an integer (accept strings like "1883")
@@ -174,7 +177,7 @@ class MQTTClientSimple:
                 raise MQTTException("Invalid port value: must be an integer or numeric string")
 
         if server is None:
-            raise ValueError("server must be provided")
+            server = DEFAULT_BROKER
 
         if client_id is None:
             client_id = get_mac_address()
@@ -235,13 +238,25 @@ class MQTTClientSimple:
         self.lw_retain = retain
 
     def connect(self, clean_session=True):
+        if not is_connected_to_wifi():
+            connect_to_wifi()
         self.sock = socket.socket()
         addr = socket.getaddrinfo(self.server, self.port)[0][-1]
         self.sock.connect(addr)
         if self.ssl:
-            import ussl
+            try:
+                import ssl
+            except ImportError:
+                import ussl as ssl
 
-            self.sock = ussl.wrap_socket(self.sock, **self.ssl_params)
+            params = {}
+            if hasattr(self, "server") and isinstance(self.server, str):
+                params["server_hostname"] = self.server
+            params.update(self.ssl_params)
+            try:
+                self.sock = ssl.wrap_socket(self.sock, **params)
+            except (TypeError, ValueError):
+                self.sock = ssl.wrap_socket(self.sock, **self.ssl_params)
         premsg = bytearray(b"\x10\0\0\0\0\0")
         msg = bytearray(b"\x04MQTT\x04\x02\0\0")
 
@@ -410,23 +425,27 @@ class MQTTClientSimple:
         self.sock.setblocking(False)
         return self.wait_msg()
 
-def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback, port=1883, 
-                          wifi_ssid=None, wifi_password=None):
+def manage_mqtt_connection(client, server_broker=None, client_id=None, topic_cmd=None, callback=None, port=0, 
+                          wifi_ssid=None, wifi_password=None, ssl=True, ssl_params={}):
     """
     Gère la connexion WiFi et MQTT.
     Retourne l'objet client MQTT (connecté ou None si échec).
     
     Args:
         client: Instance MQTTClientSimple existante ou None
-        server_broker: Adresse du broker MQTT
+        server_broker: Adresse du broker MQTT (défaut: DEFAULT_BROKER)
         client_id: ID client MQTT
         topic_cmd: Topic de commande à souscrire
         callback: Fonction de callback pour les messages
-        port: Port MQTT (défaut: 1883)
+        port: Port MQTT (défaut: 0, sélectionne 8883 si ssl=True, 1883 sinon)
         wifi_ssid: SSID WiFi (défaut: DEFAULT_SSID)
         wifi_password: Mot de passe WiFi (défaut: DEFAULT_PASSWORD)
+        ssl: Connexion sécurisée SSL/TLS (défaut: True)
+        ssl_params: Paramètres SSL additionnels
     """
     # Utiliser les valeurs par défaut si non fournies
+    if server_broker is None:
+        server_broker = DEFAULT_BROKER
     if wifi_ssid is None:
         wifi_ssid = DEFAULT_SSID
     if wifi_password is None:
@@ -465,7 +484,9 @@ def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback
             client = MQTTClientSimple(
                 client_id=client_id,
                 server=server_broker,
-                port=port
+                port=port,
+                ssl=ssl,
+                ssl_params=ssl_params
             )
             client.set_callback(callback)
             client.connect()
@@ -484,17 +505,21 @@ def manage_mqtt_connection(client, server_broker, client_id, topic_cmd, callback
     return client
 
 class ClientMQTT:
-    def __init__(self, broker, port=0, client_id=None, topic_cmd=None, callback=None, 
-                 wifi_ssid=None, wifi_password=None):
-        self.broker = broker
+    def __init__(self, broker=None, port=0, client_id=None, topic_cmd=None, callback=None, 
+                 wifi_ssid=None, wifi_password=None, auto_connect=True, ssl=True, ssl_params={}):
+        self.broker = broker if broker else DEFAULT_BROKER
         self.port = port
         self.client_id = client_id
         self.topic_cmd = topic_cmd
         self.callback = callback
+        self.ssl = ssl
+        self.ssl_params = ssl_params
         self.client = None
         # Stocker les identifiants WiFi
         self.wifi_ssid = wifi_ssid if wifi_ssid else DEFAULT_SSID
         self.wifi_password = wifi_password if wifi_password else DEFAULT_PASSWORD
+        if auto_connect:
+            self.check_connection()
 
     def check_connection(self, timer=None):
         """
@@ -509,7 +534,9 @@ class ClientMQTT:
             callback=self.callback,
             port=self.port,
             wifi_ssid=self.wifi_ssid,
-            wifi_password=self.wifi_password
+            wifi_password=self.wifi_password,
+            ssl=self.ssl,
+            ssl_params=self.ssl_params
         )
         return self.client
     
@@ -518,6 +545,8 @@ class ClientMQTT:
         Publie un message si connecté.
         Exemple avec retain: client.publish("mon/topic", "message", retain=True)
         """
+        if self.client is None:
+            self.check_connection()
         if self.client:
             try:
                 self.client.publish(topic, str(message), qos=qos, retain=retain)
@@ -530,6 +559,8 @@ class ClientMQTT:
         """
         Vérifie les messages entrants (doit être appelé dans la boucle principale).
         """
+        if self.client is None:
+            self.check_connection()
         if self.client:
              try:
                  self.client.check_msg()
@@ -540,6 +571,8 @@ class ClientMQTT:
         """
         Attend de manière bloquante les messages entrants.
         """
+        if self.client is None:
+            self.check_connection()
         if self.client:
              try:
                  self.client.wait_msg()
@@ -548,6 +581,8 @@ class ClientMQTT:
 
     def subscribe(self, topic):
         """S'abonne à un topic supplémentaire."""
+        if self.client is None:
+            self.check_connection()
         if self.client:
             try:
                 self.client.subscribe(topic)

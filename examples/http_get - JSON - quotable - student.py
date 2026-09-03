@@ -4,9 +4,8 @@ from fasapico import *
 # 1. Je me connecte au WiFi
 #
 
-#change si necessaire
-ip = connect_to_wifi(ssid = "Icam_IOT", password = "V@nn3s2026")
-print("Connected to WiFi (" +ip+")")
+ip = connect_to_wifi()
+print("Connected to WiFi (" + ip + ")")
 
 #
 # 2. J'envoie une requete

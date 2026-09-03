@@ -12,8 +12,6 @@ from fasapico import *
 # CONFIGURATION DU PROJET & MQTT
 # ==========================================
 NOM_PROJET = "miamconnect"
-CLIENT_ID = f"Pico_{NOM_PROJET}"
-BROKER_SERVER = "mqtt.dev.icam.school"
 
 # Structure des topics de l'espace privé :
 # - Actionneurs (écoute) : bzh/mecatro/prive/<NOM_PROJET>/actionneur/<NOM>
@@ -62,14 +60,11 @@ def sur_reception_ordre(topic, msg):
             print("-> Action : Sonnerie du buzzer (Bip bip !)")
 
 # ==========================================
-# 2. CONNEXION WI-FI & MQTT
+# 2. CONNEXION AU BROKER MQTT
 # ==========================================
-print("Connexion au réseau Wi-Fi...")
-ip = connect_to_wifi()
-print(f"Wi-Fi connecté ! Adresse IP : {ip}")
 
-print(f"Connexion au Broker : {BROKER_SERVER}...")
-clientMQTT = MQTTClientSimple(client_id=CLIENT_ID, server=BROKER_SERVER, ssl=True)
+clientMQTT = MQTTClientSimple()
+print(f"Connexion au Broker : {clientMQTT.server} (ID: {clientMQTT.client_id})...")
 
 # Définition du callback AVANT la connexion
 clientMQTT.set_callback(sur_reception_ordre)

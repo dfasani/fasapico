@@ -120,7 +120,7 @@ def on_message_callback(topic, msg):
 
         # connexion MQTT
         logging.info("Connexion au broker MQTT...")
-        clientMQTT = MQTTClientSimple(client_id="DavidFasani7685", server="mqtt.dev.icam.school", ssl=True)
+        clientMQTT = MQTTClientSimple()
         clientMQTT.set_callback(on_message_callback)
         clientMQTT.connect()
 

@@ -3,7 +3,7 @@ from fasapico import *
 #
 # 1. Je me connecte au WiFi
 #
-ip = connect_to_wifi(ssid="Icam_IOT", password = "V@nn3s2026")
+ip = connect_to_wifi()
 
 #
 # 2. J'envoie une requete

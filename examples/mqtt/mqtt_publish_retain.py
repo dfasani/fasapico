@@ -5,13 +5,8 @@
 
 from fasapico import *
 
-# ClientMQTT prend en charge la connexion WiFi et MQTT
-clientMQTT = ClientMQTT(
-    broker="mqtt.dev.icam.school",
-    wifi_ssid="Icam_IOT",
-    wifi_password="V@nn3s2026"
-)
-clientMQTT.check_connection()
+# ClientMQTT prend en charge la connexion WiFi et MQTT par défaut
+clientMQTT = ClientMQTT()
 
 # Envoi du message avec le paramètre retain=True
 clientMQTT.publish("bzh/iot/demo/maquette/a3_retain", "Message conservé par le broker !", retain=True) 

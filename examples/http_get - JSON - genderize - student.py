@@ -4,7 +4,7 @@ from fasapico import *
 # 1. Je me connecte au WiFi     change si necessaire
 #
 
-ip = connect_to_wifi("Icam_IOT", "V@nn3s2026")
+ip = connect_to_wifi()
 print(f"Adresse IP : {ip}")
 
 #

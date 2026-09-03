@@ -6,18 +6,13 @@ import json
 from fasapico import *
 
 # ==========================================
-# 1. SYNCHRONISATION HORLOGE (NTP)
+# 1. CLIENT MQTT
 # ==========================================
-# Synchronisation de l'horloge interne (connexion Wi-Fi automatique)
-sync_time()
-
-# ==========================================
-# 2. CLIENT MQTT
-# ==========================================
+# ClientMQTT gère automatiquement le Wi-Fi, l'heure NTP et la connexion MQTT
 clientMQTT = ClientMQTT()
 
 # ==========================================
-# 3. STRUCTURATION DU MESSAGE JSON (4 CHAMPS OBLIGATOIRES)
+# 2. STRUCTURATION DU MESSAGE JSON (4 CHAMPS OBLIGATOIRES)
 # ==========================================
 # Topic public : bzh/mecatro/dashboard/<NOM_PROJET>/<NOM_VARIABLE>
 TOPIC = "bzh/mecatro/dashboard/miamconnect/eau"

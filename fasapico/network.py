@@ -30,7 +30,7 @@ def get_mac_address():
     return ubinascii.hexlify(wlan.config('mac'), ':').decode().upper()
 
 # helper method to quickly get connected to wifi
-def connect_to_wifi(ssid=None, password=None, timeout_seconds=30, debug=False):
+def connect_to_wifi(ssid=None, password=None, timeout_seconds=30, debug=False, sync_ntp=True):
     # Utiliser les valeurs par défaut si non fournies
     if ssid is None:
         ssid = DEFAULT_SSID
@@ -78,7 +78,13 @@ def connect_to_wifi(ssid=None, password=None, timeout_seconds=30, debug=False):
         print("Attente pour stabilisation du WiFi...")
     
     time.sleep(1)
-    return ifconfig_data[0]
+    ip = ifconfig_data[0]
+    if sync_ntp:
+        try:
+            sync_time(auto_connect_wifi=False)
+        except Exception as e:
+            warn(f"Synchronisation NTP ignorée ({e})")
+    return ip
 
 # helper method to put the pico into access point mode
 def access_point(ssid, password = None):
@@ -124,12 +130,12 @@ def check_internet_connection(dns_server="8.8.8.8", port=53):
     except:
         return False
 
-def sync_time():
+def sync_time(auto_connect_wifi=True):
     """Synchronise l'horloge interne avec un serveur NTP."""
     import ntptime
     try:
-        if not is_connected_to_wifi():
-            connect_to_wifi()
+        if auto_connect_wifi and not is_connected_to_wifi():
+            connect_to_wifi(sync_ntp=False)
         info("Synchronisation de l'heure via NTP...")
         ntptime.settime()
         info("Heure synchronisée.")
@@ -141,10 +147,13 @@ def sync_time():
 def get_iso_timestamp():
     """
     Retourne l'horodatage courant au format ISO 8601 UTC (ex: '2026-08-28T15:21:00Z').
-    Nécessite d'avoir synchronisé l'heure au préalable via sync_time().
+    Si l'heure n'a pas encore été synchronisée (ex: année < 2024), tente automatiquement une synchronisation.
     """
     try:
         t = time.gmtime()
+        if t[0] < 2024:
+            sync_time()
+            t = time.gmtime()
         return "{:04d}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}Z".format(t[0], t[1], t[2], t[3], t[4], t[5])
     except Exception as e:
         error(f"Erreur formatage date ISO: {e}")

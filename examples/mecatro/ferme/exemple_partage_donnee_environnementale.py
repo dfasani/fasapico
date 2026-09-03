@@ -15,19 +15,13 @@ TOPIC = "bzh/mecatro/ambiance/station_meteo/pression"
 INTERVALLE_MS = 5000 
 
 # ==========================================
-# 1. SYNCHRONISATION HORLOGE (NTP)
+# 1. INITIALISATION DU CLIENT MQTT
 # ==========================================
-# Synchronisation de l'heure UTC via NTP (connexion Wi-Fi automatique)
-sync_time()
-
-# ==========================================
-# 2. INITIALISATION CLIENT MQTT
-# ==========================================
-# ClientMQTT se connecte automatiquement au Wi-Fi et au broker MQTT
+# ClientMQTT gère automatiquement le Wi-Fi, l'heure NTP et la connexion MQTT
 clientMQTT = ClientMQTT()
 
 # ==========================================
-# 3. INITIALISATION DU REPÈRE TEMPOREL
+# 2. INITIALISATION DU REPÈRE TEMPOREL
 # ==========================================
 dernier_envoi_ms = time.ticks_ms()
 print("Démarrage de la boucle de publication d'ambiance...")

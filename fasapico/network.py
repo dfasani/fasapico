@@ -157,7 +157,7 @@ import ustruct as struct
 class MQTTException(Exception):
     pass
 
-class MQTTClientSimple:
+class _ClientMQTTSocket:
     def __init__(
         self,
         client_id=None,
@@ -432,7 +432,7 @@ def manage_mqtt_connection(client, server_broker=None, client_id=None, topic_cmd
     Retourne l'objet client MQTT (connecté ou None si échec).
     
     Args:
-        client: Instance MQTTClientSimple existante ou None
+        client: Instance de client MQTT existante ou None
         server_broker: Adresse du broker MQTT (défaut: DEFAULT_BROKER)
         client_id: ID client MQTT
         topic_cmd: Topic de commande à souscrire
@@ -481,7 +481,7 @@ def manage_mqtt_connection(client, server_broker=None, client_id=None, topic_cmd
             # Petit délai stabilisateur
             time.sleep(1)
             
-            client = MQTTClientSimple(
+            client = _ClientMQTTSocket(
                 client_id=client_id,
                 server=server_broker,
                 port=port,
@@ -506,30 +506,76 @@ def manage_mqtt_connection(client, server_broker=None, client_id=None, topic_cmd
 
 class ClientMQTT:
     def __init__(self, broker=None, port=0, client_id=None, topic_cmd=None, callback=None, 
-                 wifi_ssid=None, wifi_password=None, auto_connect=True, ssl=True, ssl_params={}):
+                 wifi_ssid=None, wifi_password=None, auto_connect=True, ssl=True, ssl_params={}, server=None):
+        if broker is None and server is not None:
+            broker = server
         self.broker = broker if broker else DEFAULT_BROKER
+        self._client_id = client_id
         self.port = port
-        self.client_id = client_id
         self.topic_cmd = topic_cmd
         self.callback = callback
         self.ssl = ssl
         self.ssl_params = ssl_params
         self.client = None
+        self.subscribed_topics = set()
         # Stocker les identifiants WiFi
         self.wifi_ssid = wifi_ssid if wifi_ssid else DEFAULT_SSID
         self.wifi_password = wifi_password if wifi_password else DEFAULT_PASSWORD
         if auto_connect:
             self.check_connection()
 
+    @property
+    def server(self):
+        return self.broker
+
+    @server.setter
+    def server(self, val):
+        self.broker = val
+
+    @property
+    def client_id(self):
+        if self.client and hasattr(self.client, "client_id"):
+            return self.client.client_id
+        return self._client_id if self._client_id else get_mac_address()
+
+    def connect(self, clean_session=True):
+        """Connecte ou reconnecte au broker MQTT."""
+        return self.check_connection()
+
+    def disconnect(self):
+        """Déconnecte proprement le client du broker."""
+        if self.client:
+            try:
+                self.client.disconnect()
+            except Exception:
+                pass
+
+    def ping(self):
+        """Envoie un ping MQTT pour maintenir le lien vivant."""
+        if self.client:
+            return self.client.ping()
+
+    def set_callback(self, f):
+        """Définit la fonction callback appelée lors de la réception d'un message."""
+        self.callback = f
+        if self.client:
+            self.client.set_callback(f)
+
+    def set_last_will(self, topic, msg, retain=False, qos=0):
+        """Configure le Last Will and Testament."""
+        if self.client:
+            self.client.set_last_will(topic, msg, retain=retain, qos=qos)
+
     def check_connection(self, timer=None):
         """
         Vérifie et rétablit la connexion MQTT si nécessaire.
         Peut être utilisé comme callback de Timer.
         """
+        was_connected = self.client is not None
         self.client = manage_mqtt_connection(
             client=self.client,
             server_broker=self.broker,
-            client_id=self.client_id,
+            client_id=self._client_id,
             topic_cmd=self.topic_cmd,
             callback=self.callback,
             port=self.port,
@@ -538,34 +584,52 @@ class ClientMQTT:
             ssl=self.ssl,
             ssl_params=self.ssl_params
         )
+        if self.client and not was_connected and hasattr(self, "subscribed_topics"):
+            for t in self.subscribed_topics:
+                try:
+                    self.client.subscribe(t)
+                except Exception:
+                    pass
         return self.client
     
-    def publish(self, topic, message, qos=0, retain=False):
+    def publish(self, topic, message=None, qos=0, retain=False, msg=None):
         """
-        Publie un message si connecté.
-        Exemple avec retain: client.publish("mon/topic", "message", retain=True)
+        Publie un message. Se connecte ou reconnecte automatiquement si besoin.
+        Accepte aussi bien `msg` que `message`.
         """
+        if message is None and msg is not None:
+            message = msg
         if self.client is None:
             self.check_connection()
         if self.client:
             try:
                 self.client.publish(topic, str(message), qos=qos, retain=retain)
+                return True
             except Exception as e:
-                error(f"Erreur publish {topic}: {e}")
-        else:
-            pass
+                warn(f"Lien perdu lors du publish ({e}). Reconnexion...")
+                self.client = None
+                self.check_connection()
+                if self.client:
+                    try:
+                        self.client.publish(topic, str(message), qos=qos, retain=retain)
+                        return True
+                    except Exception as e2:
+                        error(f"Echec après reconnexion: {e2}")
+        return False
 
     def check_msg(self):
         """
-        Vérifie les messages entrants (doit être appelé dans la boucle principale).
+        Vérifie les messages entrants. Se reconnecte automatiquement si besoin.
         """
         if self.client is None:
             self.check_connection()
         if self.client:
-             try:
-                 self.client.check_msg()
-             except Exception as e:
-                 error(f"Erreur check_msg: {e}")
+            try:
+                return self.client.check_msg()
+            except Exception as e:
+                warn(f"Lien perdu dans check_msg ({e}). Reconnexion...")
+                self.client = None
+                self.check_connection()
 
     def wait_msg(self):
         """
@@ -574,13 +638,18 @@ class ClientMQTT:
         if self.client is None:
             self.check_connection()
         if self.client:
-             try:
-                 self.client.wait_msg()
-             except Exception as e:
-                 error(f"Erreur wait_msg: {e}") 
+            try:
+                return self.client.wait_msg()
+            except Exception as e:
+                warn(f"Lien perdu dans wait_msg ({e}). Reconnexion...")
+                self.client = None
+                self.check_connection()
 
     def subscribe(self, topic):
-        """S'abonne à un topic supplémentaire."""
+        """S'abonne à un topic et le mémorise pour les reconnexions automatiques."""
+        if not hasattr(self, "subscribed_topics"):
+            self.subscribed_topics = set()
+        self.subscribed_topics.add(topic)
         if self.client is None:
             self.check_connection()
         if self.client:

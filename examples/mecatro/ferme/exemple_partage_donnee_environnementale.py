@@ -21,16 +21,10 @@ INTERVALLE_MS = 5000
 sync_time()
 
 # ==========================================
-# 2. CONNEXION AU BROKER MQTT
+# 2. INITIALISATION CLIENT MQTT
 # ==========================================
-clientMQTT = MQTTClientSimple()
-print(f"Connexion au Broker : {clientMQTT.server} (ID: {clientMQTT.client_id})...")
-
-try:
-    clientMQTT.connect()
-    print("Connecté avec succès au broker MQTT.")
-except Exception as e:
-    print("Erreur de connexion initiale au broker MQTT :", e)
+# ClientMQTT se connecte automatiquement au Wi-Fi et au broker MQTT
+clientMQTT = ClientMQTT()
 
 # ==========================================
 # 3. INITIALISATION DU REPÈRE TEMPOREL
@@ -42,39 +36,28 @@ print("Démarrage de la boucle de publication d'ambiance...")
 # BOUCLE PRINCIPALE NON-BLOQUANTE
 # ==========================================
 while True:
-    try:
-        temps_courant_ms = time.ticks_ms()
+    temps_courant_ms = time.ticks_ms()
+    
+    # Vérification si l'intervalle est écoulé (gestion sûre des millisecondes)
+    if time.ticks_diff(temps_courant_ms, dernier_envoi_ms) >= INTERVALLE_MS:
+        dernier_envoi_ms = temps_courant_ms  
         
-        # Vérification si l'intervalle est écoulé (gestion sûre des millisecondes)
-        if time.ticks_diff(temps_courant_ms, dernier_envoi_ms) >= INTERVALLE_MS:
-            dernier_envoi_ms = temps_courant_ms  
-            
-            # Simulation d'une valeur de capteur (ex: baromètre BMP280 en hPa)
-            valeur_mesuree = 1013 + random.randint(-4, 4)
-            
-            # Structuration du message au format normalisé Mechatro Ferme (4 champs obligatoires)
-            donnees_capteur = {
-                "valeur": valeur_mesuree,
-                "unite": "hPa",
-                "type": "int",
-                "dateheure": get_iso_timestamp()  # Horodatage ISO 8601 UTC
-            }
-            
-            payload_json = json.dumps(donnees_capteur)
-            
-            # Publication avec retain=True obligatoire pour conserver la dernière valeur pour la communauté
-            clientMQTT.publish(topic=TOPIC, msg=payload_json, retain=True)
-            print(f"Données d'ambiance publiées sur {TOPIC} : {payload_json}")
-            
-    except Exception as e:
-        print(f"Une erreur est survenue : {e}")
-        print("Tentative de reconnexion...")
-        try:
-            connect_to_wifi()
-            sync_time()
-            clientMQTT.connect()
-        except Exception as recon_err:
-            print(f"Échec de la reconnexion automatique : {recon_err}")
+        # Simulation d'une valeur de capteur (ex: baromètre BMP280 en hPa)
+        valeur_mesuree = 1013 + random.randint(-4, 4)
+        
+        # Structuration du message au format normalisé Mechatro Ferme (4 champs obligatoires)
+        donnees_capteur = {
+            "valeur": valeur_mesuree,
+            "unite": "hPa",
+            "type": "int",
+            "dateheure": get_iso_timestamp()  # Horodatage ISO 8601 UTC
+        }
+        
+        payload_json = json.dumps(donnees_capteur)
+        
+        # Publication avec retain=True (reconnexion automatique transparente en cas de coupure)
+        clientMQTT.publish(topic=TOPIC, msg=payload_json, retain=True)
+        print(f"Données d'ambiance publiées sur {TOPIC} : {payload_json}")
             
     # Pause courte pour libérer du temps CPU
     time.sleep_ms(50)

@@ -120,9 +120,7 @@ def on_message_callback(topic, msg):
 
         # connexion MQTT
         logging.info("Connexion au broker MQTT...")
-        clientMQTT = MQTTClientSimple()
-        clientMQTT.set_callback(on_message_callback)
-        clientMQTT.connect()
+        clientMQTT = ClientMQTT(callback=on_message_callback)
 
         clientMQTT.subscribe("bzh/iot/bateau/monBateau/safran")
         clientMQTT.subscribe("bzh/iot/bateau/monBateau/vitesse")

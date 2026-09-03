@@ -12,12 +12,9 @@ from fasapico import *
 sync_time()
 
 # ==========================================
-# 2. CONNEXION AU BROKER MQTT
+# 2. CLIENT MQTT
 # ==========================================
-clientMQTT = MQTTClientSimple()
-print(f"Connexion au Broker : {clientMQTT.server} (ID: {clientMQTT.client_id})...")
-clientMQTT.connect()
-print("Connecté au broker MQTT.")
+clientMQTT = ClientMQTT()
 
 # ==========================================
 # 3. STRUCTURATION DU MESSAGE JSON (4 CHAMPS OBLIGATOIRES)

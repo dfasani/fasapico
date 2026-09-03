@@ -60,24 +60,11 @@ def sur_reception_ordre(topic, msg):
             print("-> Action : Sonnerie du buzzer (Bip bip !)")
 
 # ==========================================
-# 2. CONNEXION AU BROKER MQTT
+# 2. CLIENT MQTT & ABONNEMENT
 # ==========================================
-
-clientMQTT = MQTTClientSimple()
-print(f"Connexion au Broker : {clientMQTT.server} (ID: {clientMQTT.client_id})...")
-
-# Définition du callback AVANT la connexion
-clientMQTT.set_callback(sur_reception_ordre)
-
-try:
-    clientMQTT.connect()
-    print("Connecté avec succès au broker MQTT.")
-    
-    # Abonnement à tous les topics actionneurs du groupe
-    clientMQTT.subscribe(topic=TOPIC_SUB_ACTIONNEURS)
-    print(f"Abonné aux ordres sur : {TOPIC_SUB_ACTIONNEURS}")
-except Exception as e:
-    print("Erreur de connexion initiale au broker MQTT :", e)
+clientMQTT = ClientMQTT(callback=sur_reception_ordre)
+clientMQTT.subscribe(topic=TOPIC_SUB_ACTIONNEURS)
+print(f"Abonné aux ordres sur : {TOPIC_SUB_ACTIONNEURS}")
 
 # ==========================================
 # 3. BOUCLE PRINCIPALE NON-BLOQUANTE
@@ -101,7 +88,7 @@ while True:
             presence_simulee = 1 if presence_simulee == 0 else 0
             poids_mesure = 120 if presence_simulee == 1 else 0
             
-            # Envoi simple sur l'espace privé (valeur brute string ou nombre)
+            # Envoi simple sur l'espace privé (reconnexion automatique en cas de coupure)
             clientMQTT.publish(topic=TOPIC_PUB_CAPTEUR_PRESENCE, msg=str(presence_simulee))
             clientMQTT.publish(topic=TOPIC_PUB_CAPTEUR_POIDS, msg=str(poids_mesure))
             
@@ -109,14 +96,6 @@ while True:
 
     except Exception as e:
         print(f"Erreur détectée dans la boucle : {e}")
-        print("Tentative de reconnexion...")
-        try:
-            connect_to_wifi()
-            clientMQTT.connect()
-            clientMQTT.subscribe(topic=TOPIC_SUB_ACTIONNEURS)
-            print("Reconnexion réussie !")
-        except Exception as recon_err:
-            print(f"Échec de la reconnexion automatique : {recon_err}")
             
     # Pause courte pour soulager le microcontrôleur
     time.sleep_ms(20)

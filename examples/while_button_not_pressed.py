@@ -1,4 +1,4 @@
-from machine import Pin
+from machine import *
 
 button = Pin(9, Pin.IN, Pin.PULL_DOWN)
 

@@ -1,4 +1,4 @@
-from machine import Pin, SoftI2C
+from machine import *
 import utime
 import time
 from time import *

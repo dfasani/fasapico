@@ -1,4 +1,4 @@
-from machine import Pin, PWM
+from machine import *
 import time
 
 # 1. CONFIGURATION (Le "Setup")

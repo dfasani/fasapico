@@ -1,4 +1,4 @@
-from machine import Pin
+from machine import *
 from time import sleep_ms
 
 pins = [

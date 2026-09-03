@@ -1,4 +1,4 @@
-from machine import Pin
+from machine import *
 import utime
 import time
 

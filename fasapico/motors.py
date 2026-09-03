@@ -1,4 +1,4 @@
-from machine import Pin, PWM
+from machine import *
 import time
 from .utils import scale, scale_to_int
 

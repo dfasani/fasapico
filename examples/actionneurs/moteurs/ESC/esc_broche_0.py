@@ -1,4 +1,4 @@
-from machine import Pin, PWM
+from machine import *
 from time import sleep
 
 # Configuration de la broche PWM sur la broche 0

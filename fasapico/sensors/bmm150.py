@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*
 
 import utime
-from machine import I2C, Pin, SoftI2C
+from machine import *
 import math
 
 

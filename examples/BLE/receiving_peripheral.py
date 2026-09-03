@@ -1,4 +1,4 @@
-from machine import Pin, ADC
+from machine import *
 from bluetooth import BLE
 from ble import BLESimplePeripheral
 import binascii

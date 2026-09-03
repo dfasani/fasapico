@@ -1,7 +1,7 @@
 import bluetooth
 import time
 from ble_simple_peripheral import *
-from machine import Pin
+from machine import *
 
 
 ble = bluetooth.BLE()

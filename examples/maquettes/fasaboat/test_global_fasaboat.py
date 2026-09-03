@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from fasapico import *
 from fasapico.motors import ServoMoteur
-from machine import Pin, ADC
+from machine import *
 import time
 import sys
 import uselect

@@ -1,6 +1,6 @@
 import sys
 import ubinascii
-from machine import Timer
+from machine import *
 
 # ==========================================
 # Logging Utilities

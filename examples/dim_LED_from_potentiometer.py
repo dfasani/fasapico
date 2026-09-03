@@ -1,4 +1,4 @@
-from machine import Pin, PWM, ADC
+from machine import *
 import time 
 
 led = PWM(Pin(25))

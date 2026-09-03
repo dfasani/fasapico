@@ -4,7 +4,7 @@ import usocket as socket
 import urequests
 import json
 import ubinascii
-from machine import Timer
+from machine import *
 
 from .utils import warn, error, info, debug, decode_bytes
 
